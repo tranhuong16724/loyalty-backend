@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="'Chi tiết – ' + ${customer.fullName}">Chi tiết khách hàng</title>
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primaryBlue: #376acf;
+            --primaryPurple: #bdb7ea;
+            --darkBlue: #5B6EA6;
+
+            --yellow: #ffd60a;
+            --white: #fff;
+            --gray: #888;
+
+            --border: #e8ecf5;
+            --shadow: 0 2px 16px rgba(0,0,0,.08);
+
+            --bgLight: #F5F7FF;
+
+            --redSoft: #ff6b81;
+            --blueSoft: #dbeafe;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bgLight);
+            color: #1a1a2e;
+        }
+
+        /* TOPBAR */
+        .topbar {
+
+            background: linear-gradient(
+                    90deg,
+                    var(--primaryBlue),
+                    var(--darkBlue),
+                    var(--primaryPurple)
+            );
+
+            color: #fff;
+
+            padding: 0 32px;
+            height: 60px;
+
+            display: flex;
+            align-items: center;
+            gap: 16px;
+
+            position: sticky;
+            top: 0;
+            z-index: 100;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
+        }
+
+        .topbar a {
+            color: rgba(255,255,255,.85);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .topbar a:hover {
+            color: #fff;
+        }
+
+        .topbar-brand {
+            font-weight: 900;
+            font-size: 20px;
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 28px 20px;
+        }
+
+        /* PROFILE HEADER */
+        .profile-header {
+
+            background: linear-gradient(
+                    135deg,
+                    var(--primaryBlue),
+                    var(--primaryPurple)
+            );
+
+            border-radius: 22px;
+
+            padding: 30px 34px;
+
+            color: #fff;
+
+            display: flex;
+            align-items: center;
+            gap: 24px;
+
+            margin-bottom: 24px;
+
+            box-shadow: var(--shadow);
+        }
+
+        /* AVATAR */
+        .avatar {
+
+            width: 72px;
+            height: 72px;
+
+            border-radius: 50%;
+
+            background: linear-gradient(
+                    135deg,
+                    #7c96f8,
+                    #c0bbea
+            );
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 30px;
+            font-weight: 900;
+
+            color: #fff;
+
+            flex-shrink: 0;
+
+            box-shadow: 0 4px 12px rgba(0,0,0,.12);
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+
+        .profile-phone {
+            opacity: .9;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .profile-badge {
+
+            background: #FFD84D;
+            color: var(--darkBlue);
+
+            padding: 5px 15px;
+
+            border-radius: 20px;
+
+            font-size: 11px;
+            font-weight: 900;
+
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        /* POINTS */
+        .points-big {
+            text-align: right;
+        }
+
+        .points-big .num {
+            font-size: 52px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .points-big .lbl {
+            font-size: 12px;
+            opacity: .85;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* CARD */
+        .card {
+
+            background: var(--white);
+
+            border-radius: 22px;
+
+            padding: 28px;
+
+            box-shadow: var(--shadow);
+
+            margin-bottom: 24px;
+
+            border: 1px solid #EEF1FB;
+        }
+
+        .card-title {
+
+            font-size: 17px;
+            font-weight: 800;
+
+            color: var(--primaryBlue);
+
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+
+            border-bottom: 2px solid var(--border);
+        }
+
+        /* FORM */
+        .form-row {
+
+            display: flex;
+            gap: 12px;
+
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .form-group label {
+
+            font-size: 11px;
+            font-weight: 700;
+
+            color: var(--gray);
+
+            text-transform: uppercase;
+        }
+
+        input,
+        select,
+        textarea {
+
+            padding: 11px 14px;
+
+            border: 1.5px solid #DCE3F4;
+            border-radius: 12px;
+
+            font-family: inherit;
+            font-size: 14px;
+
+            outline: none;
+
+            background: #fff;
+        }
+
+        input:focus,
+        select:focus {
+
+            border-color: var(--primaryBlue);
+
+            box-shadow: 0 0 0 3px rgba(126,166,246,.15);
+        }
+
+        /* BUTTON */
+        .btn {
+
+            padding: 10px 20px;
+
+            border-radius: 12px;
+            border: none;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            cursor: pointer;
+            transition: .2s;
+
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+
+            text-decoration: none;
+        }
+
+        .btn-green {
+            background: var(--primaryBlue);
+            color: #fff;
+        }
+
+        .btn-green:hover {
+            background: var(--darkBlue);
+        }
+
+        .btn-yellow {
+            background: #FFD84D;
+            color: var(--darkBlue);
+        }
+
+        .btn-red {
+            background: var(--redSoft);
+            color: #fff;
+        }
+
+        .btn-gray {
+            background: #EEF1F8;
+            color: #666;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead th {
+
+            background: linear-gradient(
+                    90deg,
+                    var(--primaryBlue),
+                    var(--primaryPurple)
+            );
+
+            color: #fff;
+
+            padding: 12px 16px;
+
+            text-align: left;
+            font-weight: 700;
+        }
+
+        thead th:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+
+        thead th:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        tbody tr {
+
+            border-bottom: 1px solid var(--border);
+
+            transition: .2s;
+        }
+
+        tbody tr:hover {
+            background: #F7F9FF;
+        }
+
+        tbody td {
+            padding: 12px 16px;
+            vertical-align: middle;
+        }
+
+        /* BADGE */
+        .badge {
+
+            padding: 4px 11px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+            font-weight: 700;
+
+            display: inline-block;
+        }
+
+        .badge-green {
+            background: #E0EEFF;
+            color: var(--primaryBlue);
+        }
+
+        .badge-red {
+            background: #FFE4E8;
+            color: var(--redSoft);
+        }
+
+        .badge-blue {
+            background: #DDE8FF;
+            color: #3B6EFF;
+        }
+
+        /* DELTA */
+        .delta-pos {
+            color: #4F7FFF;
+            font-weight: 800;
+        }
+
+        .delta-neg {
+            color: var(--redSoft);
+            font-weight: 800;
+        }
+
+        /* EMPTY */
+        .empty-msg {
+            text-align: center;
+            color: var(--gray);
+            padding: 24px;
+            font-size: 14px;
+        }
+    </style>
+
+</head>
+<body>
+
+<nav class="topbar">
+    <span class="topbar-brand">Quản lý khách hàng</span>
+    <span style="opacity:.4">›</span>
+    <a href="/">Trang chủ</a>
+    <span style="opacity:.4">›</span>
+    <span th:text="${customer.fullName}" style="opacity:.9;">Khách hàng</span>
+</nav>
+
+<div class="container">
+
+    <!-- Profile header -->
+    <div class="profile-header">
+        <div class="avatar" th:text="${#strings.substring(customer.fullName, customer.fullName.length()-1)}">H</div>
+        <div class="profile-info">
+            <div class="profile-name" th:text="${customer.fullName}">Tên KH</div>
+            <div class="profile-phone" th:text="${customer.phoneNumber}">SĐT</div>
+            <div class="profile-phone" th:text="${customer.email != null ? customer.email : 'Chưa cập nhật email'}">Email</div>
+            <span class="profile-badge">⭐ THÀNH VIÊN</span>
+        </div>
+        <div class="points-big">
+            <div class="lbl">Điểm tích lũy</div>
+            <div class="num" th:text="${customer.points}">0</div>
+            <div class="lbl">điểm</div>
+        </div>
+    </div>
+
+    <!-- ── ĐIỀU CHỈNH ĐIỂM THỦ CÔNG ──────────────────────────────────── -->
+    <div class="card">
+        <div class="card-title">±️ Điều chỉnh điểm thủ công</div>
+        <form method="post" action="/adjust-points">
+            <input type="hidden" name="customerId" th:value="${customer.id}"/>
+            <input type="hidden" name="redirect" value="detail"/>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Loại điều chỉnh</label>
+                    <select name="adjustType" id="adjType" onchange="setDelta()">
+                        <option value="add">➕ Cộng điểm</option>
+                        <option value="sub">➖ Trừ điểm</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Số điểm</label>
+                    <input type="number" id="adjAmount" placeholder="vd: 100" min="1" required/>
+                </div>
+                <input type="hidden" name="delta" id="adjDelta"/>
+                <div class="form-group" style="flex:2;">
+                    <label>Lý do ghi chú</label>
+                    <input type="text" name="reason" placeholder="vd: Tặng điểm sinh nhật, chương trình đặc biệt..."/>
+                </div>
+                <button type="submit" class="btn btn-yellow" onclick="return prepareDelta()">✅ Xác nhận</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── LỊCH SỬ ĐỔI VOUCHER ───────────────────────────────────────── -->
+    <div class="card">
+        <div class="card-title">🔄 Lịch sử đổi Voucher</div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID Giao dịch</th>
+                <th>ID Voucher</th>
+                <th>Tên Voucher</th>
+                <th>Thời gian</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${usages}">
+                <td th:text="${u.id}">1</td>
+                <td th:text="${u.voucherId}">1</td>
+                <td>
+                    <!-- Tra tên voucher từ danh sách -->
+                    <span th:each="v : ${vouchers}"
+                          th:if="${v.id == u.voucherId}"
+                          th:text="${v.name}"
+                          class="badge badge-green">—</span>
+                </td>
+                <td th:text="${u.used_date}">—</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(usages)}">
+                <td colspan="4" class="empty-msg">Khách hàng chưa đổi voucher nào.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── LỊCH SỬ ĐIỀU CHỈNH ĐIỂM ──────────────────────────────────── -->
+    <div class="card">
+        <div class="card-title">📊 Lịch sử điều chỉnh điểm thủ công</div>
+        <table>
+            <thead>
+            <tr>
+                <th>Thời gian</th>
+                <th>Thay đổi điểm</th>
+                <th>Lý do</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="log : ${pointLogs}">
+                <td th:text="${log.createdAt}">—</td>
+                <td>
+                        <span th:if="${log.delta >= 0}"
+                              class="delta-pos"
+                              th:text="'+' + ${log.delta}">+0</span>
+                    <span th:if="${log.delta < 0}"
+                          class="delta-neg"
+                          th:text="${log.delta}">-0</span>
+                </td>
+                <td th:text="${log.reason}">—</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(pointLogs)}">
+                <td colspan="3" class="empty-msg">Chưa có điều chỉnh thủ công nào.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── PHẢN HỒI CỦA KHÁCH ────────────────────────────────────────── -->
+    <div class="card">
+        <div class="card-title">💬 Phản hồi từ khách hàng</div>
+        <table>
+            <thead>
+            <tr><th>ID</th><th>Nội dung phản hồi</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="fb : ${feedbacks}">
+                <td th:text="${fb.id}">1</td>
+                <td th:text="${fb.noi_dung}">—</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(feedbacks)}">
+                <td colspan="2" class="empty-msg">Khách hàng chưa gửi phản hồi nào.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top:8px;">
+        <a href="/" class="btn btn-gray">← Quay về trang chủ</a>
+    </div>
+</div>
+
+<script>
+    function prepareDelta() {
+        const type = document.getElementById('adjType').value;
+        const amount = parseInt(document.getElementById('adjAmount').value) || 0;
+        document.getElementById('adjDelta').value = type === 'sub' ? -amount : amount;
+        return true;
+    }
+</script>
+</body>
+</html>
