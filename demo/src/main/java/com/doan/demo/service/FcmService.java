@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -172,12 +173,20 @@ public class FcmService {
 
     private String getAccessToken() throws IOException {
         InputStream serviceAccount;
-        // Thử classpath trước (jar), fallback sang file system
-        serviceAccount = getClass().getClassLoader()
-                .getResourceAsStream("firebase-service-account.json");
-        if (serviceAccount == null) {
-            serviceAccount = new FileInputStream(SERVICE_ACCOUNT_PATH);
+
+        // Thử đọc từ biến môi trường trước (Railway)
+        String jsonEnv = System.getenv("FIREBASE_SERVICE_ACCOUNT_JSON");
+        if (jsonEnv != null && !jsonEnv.isBlank()) {
+            serviceAccount = new ByteArrayInputStream(jsonEnv.getBytes());
+        } else {
+            // Fallback: đọc từ file (chạy local)
+            serviceAccount = getClass().getClassLoader()
+                    .getResourceAsStream("firebase-service-account.json");
+            if (serviceAccount == null) {
+                serviceAccount = new FileInputStream("src/main/resources/firebase-service-account.json");
+            }
         }
+
         GoogleCredentials credentials = GoogleCredentials
                 .fromStream(serviceAccount)
                 .createScoped(Arrays.asList("https://www.googleapis.com/auth/firebase.messaging"));
