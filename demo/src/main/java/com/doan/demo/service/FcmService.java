@@ -131,7 +131,7 @@ public class FcmService {
         androidConfig.addProperty("priority", "HIGH");
 
         JsonObject androidNotif = new JsonObject();
-        androidNotif.addProperty("channel_id", "katiburger_channel");
+        androidNotif.addProperty("channel_id", "laura_channel");
 
         androidConfig.add("notification", androidNotif);
 
