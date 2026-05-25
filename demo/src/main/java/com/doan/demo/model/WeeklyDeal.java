@@ -38,7 +38,10 @@ public class WeeklyDeal {
     /** Còn hiệu lực hay đã ẩn */
     @Column(name = "active")
     private boolean active = true;
-
+    @Column(name = "deal_type")
+    private String dealType = "MULTI_DAY";
+    @Column(name = "allowed_day_of_week")
+    private Integer allowedDayOfWeek;
     // ── Getters & Setters ─────────────────────────────────────────────────────
 
     public Long getId() { return id; }
@@ -60,4 +63,9 @@ public class WeeklyDeal {
 
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+    public String getDealType() { return dealType; }
+    public void setDealType(String dealType) { this.dealType = dealType; }
+
+    public Integer getAllowedDayOfWeek() { return allowedDayOfWeek; }
+    public void setAllowedDayOfWeek(Integer allowedDayOfWeek) { this.allowedDayOfWeek = allowedDayOfWeek; }
 }

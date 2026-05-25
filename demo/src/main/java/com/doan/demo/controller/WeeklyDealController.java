@@ -42,7 +42,18 @@ public class WeeklyDealController {
             result.put("message", "Không tìm thấy ưu đãi!");
             return result;
         }
-
+        if ("FIXED_DAY".equals(deal.getDealType()) && deal.getAllowedDayOfWeek() != null) {
+            int todayDow = java.time.LocalDate.now().getDayOfWeek().getValue();
+            int todayDisplay = (todayDow % 7) + 1;
+            if (todayDisplay != deal.getAllowedDayOfWeek()) {
+                String[] dayNames = {"", "Chủ nhật", "Thứ 2", "Thứ 3",
+                        "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"};
+                String allowedDay = dayNames[deal.getAllowedDayOfWeek()];
+                result.put("success", false);
+                result.put("message", "⏰ Ưu đãi này chỉ áp dụng vào " + allowedDay + " hàng tuần!");
+                return result;
+            }
+        }
         // Xóa mã hết hạn trong DB
         dealCodeRepository.deleteExpired(LocalDateTime.now());
 
@@ -87,17 +98,14 @@ public class WeeklyDealController {
             return result;
         }
 
-        // Kiểm tra số lần dùng
         if (dc.getTimesUsed() >= dc.getMaxUses()) {
             result.put("success", false);
             result.put("message", "⚠️ Mã đã dùng đủ " + dc.getMaxUses() + " lần!");
             return result;
         }
 
-        // Tăng times_used
         dc.setTimesUsed(dc.getTimesUsed() + 1);
 
-        // Nếu đạt max_uses thì đánh dấu used=true
         if (dc.getTimesUsed() >= dc.getMaxUses()) {
             dc.setUsed(true);
         }

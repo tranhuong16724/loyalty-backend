@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/voucher-codes")
-@CrossOrigin(origins = "*")
+
 public class VoucherCodeController {
 
     @Autowired
@@ -24,18 +25,19 @@ public class VoucherCodeController {
     @Autowired
     private VoucherRepository voucherRepository;
 
-    // ════════════════════════════════════════════════════════════════════════
-    // GENERATE CODE
-    // POST /api/voucher-codes/generate-code
-    // ════════════════════════════════════════════════════════════════════════
-
     @PostMapping("/generate-code")
     public Map<String, Object> generateCode(
             @RequestParam Long usageId,
-            @RequestParam Long customerId) {
+            @RequestParam Long customerId,
+            Authentication auth) {
 
         Map<String, Object> result = new LinkedHashMap<>();
-
+        Long callerId = (Long) auth.getPrincipal();
+        if (!callerId.equals(customerId)) {
+            result.put("success", false);
+            result.put("message", "Không có quyền thực hiện thao tác này!");
+            return result;
+        }
         VoucherUsage usage =
                 voucherUsageRepository
                         .findById(usageId)
@@ -57,13 +59,12 @@ public class VoucherCodeController {
             return result;
         }
 
-        // ── Xóa mã hết hạn cũ ─────────────────────────────
 
         dealCodeRepository.deleteExpired(
                 LocalDateTime.now()
         );
 
-        // ── Tạo mã QR/code ───────────────────────────────
+
 
         String code = generateUniqueCode();
 
@@ -71,7 +72,7 @@ public class VoucherCodeController {
 
         voucherUsageRepository.save(usage);
 
-        // ── Lưu deal_code ────────────────────────────────
+
 
         DealCode dc = new DealCode();
 
@@ -115,10 +116,6 @@ public class VoucherCodeController {
         return result;
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // VERIFY CODE
-    // POST /api/voucher-codes/verify-code
-    // ════════════════════════════════════════════════════════════════════════
 
     @PostMapping("/verify-code")
     public Map<String, Object> verifyCode(
@@ -153,7 +150,6 @@ public class VoucherCodeController {
                 return result;
             }
 
-            // ── Check expiry ────────────────────────────
 
             if (dc.getExpiresAt() != null
                     && dc.getExpiresAt()
@@ -167,7 +163,6 @@ public class VoucherCodeController {
                 return result;
             }
 
-            // ── Check usage limit ───────────────────────
 
             if (dc.getTimesUsed()
                     >= dc.getMaxUses()) {
@@ -180,7 +175,6 @@ public class VoucherCodeController {
                 return result;
             }
 
-            // ── Voucher flow ────────────────────────────
 
             if (dc.getDealId() < 0) {
 
@@ -261,9 +255,6 @@ public class VoucherCodeController {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // GENERATE UNIQUE CODE
-    // ════════════════════════════════════════════════════════════════════════
 
     private String generateUniqueCode() {
 

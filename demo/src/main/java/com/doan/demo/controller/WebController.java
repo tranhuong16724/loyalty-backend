@@ -228,7 +228,9 @@ public class WebController {
             @RequestParam(required = false, defaultValue = "") String description,
             @RequestParam(required = false, defaultValue = "") String originalPrice,
             @RequestParam(required = false, defaultValue = "") String discountPrice,
-            @RequestParam(required = false, defaultValue = "") String expiryDate) {
+            @RequestParam(required = false, defaultValue = "") String expiryDate,
+            @RequestParam(required = false, defaultValue = "MULTI_DAY") String dealType,
+            @RequestParam(required = false) Integer allowedDayOfWeek) {
 
         WeeklyDeal deal = new WeeklyDeal();
         deal.setTitle(title);
@@ -238,6 +240,8 @@ public class WebController {
         if (!expiryDate.isEmpty()) {
             try { deal.setExpiryDate(LocalDate.parse(expiryDate)); } catch (Exception ignored) {}
         }
+        deal.setDealType(dealType);
+        deal.setAllowedDayOfWeek("FIXED_DAY".equals(dealType) ? allowedDayOfWeek : null);
         deal.setActive(true);
         weeklyDealRepository.save(deal);
 

@@ -114,7 +114,7 @@ public class SecurityConfig {
                                 // ── Voucher-codes: generate & verify QR ──────
                                 // Controller prefix thực tế: /api/voucher-codes
                                 // (App Android đang gọi /api/vouchers/* — xem ghi chú bên dưới)
-                                "/api/voucher-codes/generate-code",
+//                                "/api/voucher-codes/generate-code",
                                 "/api/voucher-codes/verify-code"
                         ).permitAll()
                         .anyRequest().authenticated()

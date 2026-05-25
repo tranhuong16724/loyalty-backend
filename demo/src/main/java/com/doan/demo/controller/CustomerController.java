@@ -16,19 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-/**
- * REST API cho Android App.
- *
- * Controller chỉ làm nhiệm vụ:
- *   1. Parse request / kiểm tra quyền (JWT)
- *   2. Gọi Service
- *   3. Format response
- *
- * Toàn bộ nghiệp vụ (tính điểm, nâng hạng, FCM...) đã chuyển vào:
- *   - PointService   (cộng/trừ điểm)
- *   - VoucherService (đổi voucher, verify code)
- *   - TierService    (tính hạng từ DB)
- */
+
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
@@ -69,7 +57,6 @@ public class CustomerController {
         this.fcmService                 = fcmService;
     }
 
-    // ── [PUBLIC] Đăng ký ─────────────────────────────────────────────────────
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody Customer c) {
         if (customerRepository.findByPhoneNumber(c.getPhoneNumber()).isPresent())
@@ -83,7 +70,6 @@ public class CustomerController {
         return ResponseEntity.ok("Đăng ký thành công!");
     }
 
-    // ── [PUBLIC] Đăng nhập (giữ tương thích, không trả JWT) ──────────────────
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody Customer loginInfo) {
         String result = customerRepository
@@ -99,7 +85,6 @@ public class CustomerController {
         return ResponseEntity.ok(result);
     }
 
-    // ── [PUBLIC] Đăng nhập V2 — trả JWT ──────────────────────────────────────
     @PostMapping("/loginV2")
     public ResponseEntity<Map<String, Object>> loginV2(@RequestBody Customer loginInfo) {
         Map<String, Object> res = new LinkedHashMap<>();
@@ -121,7 +106,6 @@ public class CustomerController {
             return ResponseEntity.status(401).body(res);
         }
 
-        // Đồng bộ tier từ TierService (đọc DB)
         String correctTier = tierService.calcTier(c.getPoints());
         if (!correctTier.equals(c.getTier())) {
             c.setTier(correctTier);
@@ -141,9 +125,6 @@ public class CustomerController {
         return ResponseEntity.ok(res);
     }
 
-    // ── [PUBLIC] Yêu cầu OTP quên mật khẩu ──────────────────────────────────
-    // Bước 1: App gửi SĐT → server sinh OTP → gửi FCM về máy.
-    // Trong production: thay FCM bằng SMS gateway (Twilio, ESMS...).
     @PostMapping("/forgot-password/request")
     public ResponseEntity<String> requestOtp(@RequestBody Map<String, String> body) {
         String phone = body.get("phone");
@@ -155,9 +136,8 @@ public class CustomerController {
             return ResponseEntity.badRequest().body("Không tìm thấy tài khoản với SĐT này!");
 
         String otp = otpService.generateOtp(phone);
-        System.out.println("OTP = " + otp);
+        //System.out.println("OTP = " + otp);
 
-        // Gửi OTP qua FCM (thay thế bằng SMS trong production)
         Customer c = opt.get();
         fcmService.sendNotification(c.getFcmToken(),
                 "🔐 Mã xác thực đặt lại mật khẩu",
@@ -167,8 +147,7 @@ public class CustomerController {
         return ResponseEntity.ok("Đã gửi OTP thành công! Vui lòng kiểm tra tin nhắn của bạn.");
     }
 
-    // ── [PUBLIC] Xác nhận OTP và đặt lại mật khẩu ───────────────────────────
-    // Bước 2: App gửi { phone, otp, newPassword } → server verify → đổi mật khẩu.
+
     @PostMapping("/forgot-password/verify")
     public ResponseEntity<String> verifyOtpAndReset(@RequestBody Map<String, String> body) {
         String phone       = body.get("phone");
@@ -194,7 +173,6 @@ public class CustomerController {
 
 
 
-    // ── [JWT] Tìm theo SĐT ───────────────────────────────────────────────────
     @GetMapping("/search")
     public ResponseEntity<?> searchByPhone(@RequestParam String phone) {
         Customer c = customerRepository.findByPhoneNumber(phone)
@@ -204,7 +182,6 @@ public class CustomerController {
         return ResponseEntity.ok(c);
     }
 
-    // ── [JWT] Cập nhật FCM token ──────────────────────────────────────────────
     @PutMapping("/{id}/fcm-token")
     public ResponseEntity<String> updateFcmToken(@PathVariable Long id,
                                                  @RequestParam String token,
@@ -220,7 +197,6 @@ public class CustomerController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // ── [JWT] Cộng điểm mua hàng ─────────────────────────────────────────────
     @PostMapping("/add-points")
     public ResponseEntity<String> addPoints(@RequestBody Map<String, Object> body,
                                             Authentication auth) {
@@ -234,8 +210,6 @@ public class CustomerController {
         String result = pointService.earnFromPurchase(id, amount);
         return ResponseEntity.ok(result);
     }
-
-    // ── [JWT] Đổi voucher ─────────────────────────────────────────────────────
     @PostMapping("/redeem")
     public ResponseEntity<String> redeem(@RequestParam Long customerId,
                                          @RequestParam Long voucherId,
@@ -250,7 +224,6 @@ public class CustomerController {
         return success ? ResponseEntity.ok(message) : ResponseEntity.badRequest().body(message);
     }
 
-    // ── [JWT] Lịch sử đổi voucher ────────────────────────────────────────────
     @GetMapping("/history")
     public ResponseEntity<?> getHistory(Authentication auth) {
         Long callerId = (Long) auth.getPrincipal();
@@ -274,7 +247,7 @@ public class CustomerController {
         return ResponseEntity.ok(result);
     }
 
-    // ── [JWT] Lịch sử điểm ───────────────────────────────────────────────────
+
     @GetMapping("/points-history")
     public ResponseEntity<?> getPointsHistory(@RequestParam Long customerId, Authentication auth) {
         Long callerId = (Long) auth.getPrincipal();
@@ -283,7 +256,6 @@ public class CustomerController {
         return ResponseEntity.ok(pointTransactionRepository.findByCustomerIdOrderByCreatedAtDesc(customerId));
     }
 
-    // ── [JWT] Sử dụng voucher (đánh dấu đã dùng) ─────────────────────────────
     @PostMapping("/use-voucher")
     public ResponseEntity<String> useVoucher(@RequestParam String code, Authentication auth) {
         Long callerId = (Long) auth.getPrincipal();
@@ -293,7 +265,6 @@ public class CustomerController {
         return success ? ResponseEntity.ok(message) : ResponseEntity.badRequest().body(message);
     }
 
-    // ── [JWT] Verify voucher / deal code (trả JSON đầy đủ) ───────────────────
     @PostMapping("/verify-voucher")
     public ResponseEntity<Map<String, Object>> verifyVoucher(@RequestParam String code,
                                                              Authentication auth) {
