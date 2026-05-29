@@ -44,9 +44,7 @@ public class SecurityConfig {
         return p;
     }
 
-    // ── Security chain 1: Web Admin (Form Login + Session) ───────────────────
-    // Xử lý tất cả request KHÔNG bắt đầu bằng /api/
-    // /api/verify-json được chuyển vào đây để dùng session admin, không cần JWT
+
     @Bean
     @Order(1)
     public SecurityFilterChain webAdminFilterChain(HttpSecurity http) throws Exception {
@@ -73,9 +71,12 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
                         .invalidateHttpSession(true)
+                        //xóa cookie
                         .deleteCookies("JSESSIONID")
                 )
+
                 .sessionManagement(session -> session
+                        //webdungf session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
                 );
@@ -83,7 +84,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ── Security chain 2: REST API (JWT Stateless) ───────────────────────────
     @Bean
     @Order(2)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
@@ -91,10 +91,10 @@ public class SecurityConfig {
                 .securityMatcher("/api/**")
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
+                // app dùng stateless
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                // ── Auth ────────────────────────────────────
                                 "/api/customers/register",
                                 "/api/customers/login",
                                 "/api/customers/loginV2",
@@ -102,18 +102,14 @@ public class SecurityConfig {
                                 "/api/customers/forgot-password/request",
                                 "/api/customers/forgot-password/verify",
 
-                                // ── Menu & Deals (public) ────────────────────
                                 "/api/menu",
                                 "/api/menu/**",
                                 "/api/deals",
                                 "/api/deals/**",
 
-                                // ── Tier config (public) ─────────────────────
                                 "/api/tiers/config",
 
-                                // ── Voucher-codes: generate & verify QR ──────
-                                // Controller prefix thực tế: /api/voucher-codes
-                                // (App Android đang gọi /api/vouchers/* — xem ghi chú bên dưới)
+
 //                                "/api/voucher-codes/generate-code",
                                 "/api/voucher-codes/verify-code"
                         ).permitAll()

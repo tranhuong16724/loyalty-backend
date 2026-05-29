@@ -30,13 +30,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain)
             throws ServletException, IOException {
-
+        //server đọc authorization header
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
+            //server cắt token ( bearer có 7 ký tự)
             String token = header.substring(7);
-
+//            server kiểm tra token
             if (jwtUtil.isValid(token)) {
+                //server lấy customerid
                 Long customerId = jwtUtil.extractCustomerId(token);
 
                 // Tạo Authentication với ROLE_CUSTOMER

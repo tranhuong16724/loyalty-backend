@@ -14,37 +14,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
 
-/**
- * FcmService — gửi Push Notification qua Firebase Cloud Messaging (FCM v1 API).
- *
- * ── So sánh với WebSocket (cũ) ───────────────────────────────────────────────
- * WebSocket: Server push tới app đang MỞ qua TCP connection.
- * FCM:       Server → Firebase → Google → thiết bị Android, kể cả khi app TẮT.
- *
- * ── Cấu hình bắt buộc ────────────────────────────────────────────────────────
- * 1. Tạo Firebase project tại https://console.firebase.google.com
- * 2. Vào Project Settings → Service Accounts → Generate new private key
- * 3. Đặt file JSON vào src/main/resources/firebase-service-account.json
- * 4. Thêm FCM_PROJECT_ID vào application.properties:
- *      fcm.project-id=YOUR_FIREBASE_PROJECT_ID
- *
- * ── Dependency (pom.xml) ─────────────────────────────────────────────────────
- *   <dependency>
- *     <groupId>com.google.auth</groupId>
- *     <artifactId>google-auth-library-oauth2-http</artifactId>
- *     <version>1.23.0</version>
- *   </dependency>
- *   <dependency>
- *     <groupId>com.squareup.okhttp3</groupId>
- *     <artifactId>okhttp</artifactId>
- *     <version>4.12.0</version>
- *   </dependency>
- *   <dependency>
- *     <groupId>com.google.code.gson</groupId>
- *     <artifactId>gson</artifactId>
- *   </dependency>
- * ────────────────────────────────────────────────────────────────────────────
- */
+
 @Service
 public class FcmService {
 

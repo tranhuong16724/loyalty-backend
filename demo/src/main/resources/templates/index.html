@@ -24,13 +24,23 @@
 
         body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
 
-        /* ── Sidebar ── */
-        .sidebar { width: 240px; min-height: 100vh; background: #1B2A3A; position: fixed; top: 0; left: 0; z-index: 100; overflow-y: auto; }
-        .sidebar .brand { padding: 20px; color: #FFD700; font-size: 18px; font-weight: 700; border-bottom: 1px solid #2d3f50; }
-        .sidebar .nav-link { color: #9ab; padding: 10px 20px; display: flex; align-items: center; gap: 10px; transition: .2s; font-size: 14px; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #2d3f50; color: #fff; border-radius: 8px; margin: 0 8px; padding-left: 12px; }
+
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: linear-gradient(
+                    180deg,
+                    #e8f4fd,
+                    #d6ecf8,
+                    #e2eef8,
+                    #eef3fb
+            );
+         position: fixed; top: 0; left: 0; z-index: 100; overflow-y: auto; }
+        .sidebar .brand { padding: 20px; color: #1a4fa8; ; font-size: 22px; font-weight: 700; border-bottom: 1px solid #2d3f50; }
+        .sidebar .nav-link {  color: #1e3a6e ; font-weight: 600; font-size: 15px;padding: 11px 20px; display: flex; align-items: center; gap: 10px; transition: .2s; font-size: 14px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(55, 106, 207, 0.15);color: #1a4fa8; border-radius: 8px; margin: 0 8px; padding-left: 12px;  font-weight: 700;}
         .main-content { margin-left: 240px; padding: 24px; }
-        .nav-section { padding: 10px 20px 4px; font-size: 10px; letter-spacing: 1px; color: #5a7a9a; text-transform: uppercase; }
+        .nav-section { padding: 12px 20px 4px; font-size: 11px; letter-spacing: 1px; color: #4a78a8;  font-weight: 700; text-transform: uppercase; }
 
         /* ── Stat cards ── */
         .stat-card { border-radius: 16px; padding: 20px 24px; color: #fff; box-shadow: 0 4px 20px rgba(0,0,0,.1); }
