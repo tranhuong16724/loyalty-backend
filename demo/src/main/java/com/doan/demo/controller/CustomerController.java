@@ -63,6 +63,9 @@ public class CustomerController {
             return ResponseEntity.badRequest().body("Số điện thoại này đã được đăng ký rồi!");
         if (c.getPassword() == null || c.getPassword().length() < 6)
             return ResponseEntity.badRequest().body("Mật khẩu phải từ 6 ký tự!");
+        if (c.getEmail() != null && c.getEmail().trim().isEmpty()) {
+            c.setEmail(null);
+        }
 
         c.setPassword(passwordEncoder.encode(c.getPassword()));
         c.setPoints(0);
