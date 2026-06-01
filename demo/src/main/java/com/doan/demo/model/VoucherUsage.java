@@ -17,11 +17,7 @@ public class VoucherUsage {
     @Column(name = "voucher_id")
     private Long voucherId;
 
-    /**
-     * Mã 6 ký tự để hiển thị thay cho usageId số.
-     * DB mới đã có cột này: code VARCHAR(6) NOT NULL UNIQUE
-     * Backend tự tạo khi insert.
-     */
+
     @Column(name = "code", length = 6)
     private String code;
 

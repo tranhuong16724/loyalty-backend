@@ -284,4 +284,26 @@ public class CustomerController {
             return ResponseEntity.internalServerError().body(err);
         }
     }
+    @GetMapping("/voucher-status")
+    public ResponseEntity<Boolean> getVoucherStatus(
+            @RequestParam Long usageId,
+            Authentication auth) {
+
+        Long callerId = (Long) auth.getPrincipal();
+
+        Optional<VoucherUsage> opt =
+                voucherUsageRepository.findById(usageId);
+
+        if (opt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        VoucherUsage usage = opt.get();
+
+        if (!usage.getCustomerId().equals(callerId)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        return ResponseEntity.ok(usage.isUsed());
+    }
 }
