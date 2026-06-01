@@ -66,24 +66,25 @@ public class CustomerController {
 
         c.setPassword(passwordEncoder.encode(c.getPassword()));
         c.setPoints(0);
+        c.setTier("BRONZE");
         customerRepository.save(c);
         return ResponseEntity.ok("Đăng ký thành công!");
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Customer loginInfo) {
-        String result = customerRepository
-                .findByPhoneNumber(loginInfo.getPhoneNumber())
-                .map(c -> {
-                    if (c.getPassword() == null)    return "Tài khoản chưa thiết lập mật khẩu!";
-                    if ("BLOCKED".equals(c.getStatus())) return "Tài khoản đã bị khóa!";
-                    if (passwordEncoder.matches(loginInfo.getPassword(), c.getPassword()))
-                        return "Đăng nhập thành công! Chào mừng " + c.getFullName();
-                    return "Sai mật khẩu rồi!";
-                })
-                .orElse("Số điện thoại này chưa đăng ký thành viên!");
-        return ResponseEntity.ok(result);
-    }
+//    @PostMapping("/login")
+//    public ResponseEntity<String> login(@RequestBody Customer loginInfo) {
+//        String result = customerRepository
+//                .findByPhoneNumber(loginInfo.getPhoneNumber())
+//                .map(c -> {
+//                    if (c.getPassword() == null)    return "Tài khoản chưa thiết lập mật khẩu!";
+//                    if ("BLOCKED".equals(c.getStatus())) return "Tài khoản đã bị khóa!";
+//                    if (passwordEncoder.matches(loginInfo.getPassword(), c.getPassword()))
+//                        return "Đăng nhập thành công! Chào mừng " + c.getFullName();
+//                    return "Sai mật khẩu rồi!";
+//                })
+//                .orElse("Số điện thoại này chưa đăng ký thành viên!");
+//        return ResponseEntity.ok(result);
+//    }
 
     @PostMapping("/loginV2")
     public ResponseEntity<Map<String, Object>> loginV2(@RequestBody Customer loginInfo) {

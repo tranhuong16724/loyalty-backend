@@ -6,11 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-/**
- * API nhận góp ý từ Mobile App
- * POST http://localhost:8080/api/feedback
- * GET  http://localhost:8080/api/feedback  (Web Admin)
- */
+
 @RestController
 @RequestMapping("/api/feedback")
 @CrossOrigin(origins = "*") // cho phép app Android gọi
@@ -19,7 +15,6 @@ public class FeedbackController {
     @Autowired
     private FeedbackRepository feedbackRepository;
 
-    /** Mobile App gửi góp ý lên */
     @PostMapping
     public String create(@RequestBody Feedback feedback) {
         if (feedback.getNoi_dung() == null || feedback.getNoi_dung().trim().isEmpty()) {
@@ -29,9 +24,13 @@ public class FeedbackController {
         return "Gửi góp ý thành công!";
     }
 
-    /** Web Admin xem tất cả góp ý */
     @GetMapping
     public List<Feedback> getAll() {
         return feedbackRepository.findAll();
     }
+    @GetMapping("/my")
+    public List<Feedback> getMyFeedbacks(@RequestParam Long customerId) {
+        return feedbackRepository.findByCustomerId(customerId);
+    }
+
 }

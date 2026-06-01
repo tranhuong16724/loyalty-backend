@@ -3,10 +3,7 @@ package com.doan.demo.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
-/**
- * Bảng lưu ưu đãi / khuyến mãi trong tuần
- * Admin tạo từ Web, App hiển thị cho khách hàng
- */
+
 @Entity
 @Table(name = "weekly_deals")
 public class WeeklyDeal {
@@ -15,34 +12,27 @@ public class WeeklyDeal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Tiêu đề ưu đãi, vd: "Combo Vừa Ý" */
     @Column(name = "title", nullable = false)
     private String title;
 
-    /** Mô tả ngắn, vd: "Tiết kiệm 30%" */
     @Column(name = "description")
     private String description;
 
-    /** Giá gốc (để hiển thị gạch ngang), vd: "99.000đ" */
     @Column(name = "original_price")
     private String originalPrice;
 
-    /** Giá ưu đãi, vd: "69.000đ" */
     @Column(name = "discount_price")
     private String discountPrice;
 
-    /** Ngày kết thúc ưu đãi */
     @Column(name = "expiry_date")
     private LocalDate expiryDate;
 
-    /** Còn hiệu lực hay đã ẩn */
     @Column(name = "active")
     private boolean active = true;
     @Column(name = "deal_type")
     private String dealType = "MULTI_DAY";
     @Column(name = "allowed_day_of_week")
     private Integer allowedDayOfWeek;
-    // ── Getters & Setters ─────────────────────────────────────────────────────
 
     public Long getId() { return id; }
 

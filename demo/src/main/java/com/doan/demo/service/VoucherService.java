@@ -102,11 +102,8 @@ public class VoucherService {
         return res;
     }
 
-    // ── Xác nhận mã QR / nhập tay ────────────────────────────────────────────
 
-    /**
-     * @param callerCustomerId  NULL nếu gọi từ Web admin (bỏ qua kiểm tra quyền sở hữu)
-     */
+
     @Transactional
     public Map<String, Object> verifyCode(String rawCode, Long callerCustomerId) {
         Map<String, Object> res = new LinkedHashMap<>();
@@ -123,7 +120,6 @@ public class VoucherService {
         return res;
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────────
 
     private Map<String, Object> verifyDealCode(DealCode dc, String code,
                                                Long caller, Map<String, Object> res) {
@@ -152,8 +148,26 @@ public class VoucherService {
         WeeklyDeal deal = weeklyDealRepository.findById(dc.getDealId()).orElse(null);
         String dealTitle = deal != null ? deal.getTitle() : "Ưu đãi tuần";
 
+        int earnPoints = 20; // fallback mặc định
+        if (deal != null && deal.getDiscountPrice() != null) {
+            try {
+                String raw = deal.getDiscountPrice()
+                        .replace(".", "")
+                        .replace(",", "")
+                        .replace("đ", "")
+                        .replace("d", "")
+                        .replaceAll("[^0-9]", "")
+                        .trim();
+                if (!raw.isEmpty()) {
+                    earnPoints = (int)(Long.parseLong(raw) / 1000);
+                }
+            } catch (Exception ignored) {}
+        }
+
+        final int finalPoints = earnPoints;
         customerRepository.findById(dc.getCustomerId()).ifPresent(c -> {
-            pointService.applyEarnPoints(c, 20, "Sử dụng ưu đãi tuần: " + dealTitle);
+            pointService.applyEarnPoints(c, finalPoints,
+                    "Sử dụng ưu đãi tuần: " + dealTitle);
             fcmService.sendDataMessage(c.getFcmToken(),
                     Map.of("type", "DEAL_USED", "dealTitle", dealTitle, "code", code));
         });
