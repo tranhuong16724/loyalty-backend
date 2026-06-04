@@ -1,4 +1,3 @@
-// ── FILE 1: TierConfigRepository.java ────────────────────────────────────────
 package com.doan.demo.repository;
 import com.doan.demo.model.TierConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
