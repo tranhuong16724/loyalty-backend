@@ -35,7 +35,7 @@ public class JwtUtil {
     // hàm kiểm tra thật
     public boolean isValid(String token) {
         try {
-            parseClaims(token);
+            parseClaims(token);// xác minh chữ ký và hạn
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;

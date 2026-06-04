@@ -9,22 +9,12 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Scheduler tự động ẩn (active = false) các WeeklyDeal đã hết hạn.
- * Chạy mỗi ngày lúc 00:05 sáng.
- *
- * Yêu cầu: DemoApplication phải có @EnableScheduling.
- */
 @Component
 public class WeeklyDealScheduler {
 
     @Autowired
     private WeeklyDealRepository weeklyDealRepository;
 
-    /**
-     * Cron: 0 5 0 * * *  →  00:05:00 mỗi ngày
-     * fixedRate fallback: mỗi 6 giờ (21600000 ms) nếu cần kiểm tra liên tục hơn.
-     */
     @Scheduled(cron = "0 5 0 * * *")
     public void autoHideExpiredDeals() {
         LocalDate today = LocalDate.now();

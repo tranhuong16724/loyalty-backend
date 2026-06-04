@@ -11,18 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Trả về ngưỡng tier hiện tại từ DB cho Android App.
- *
- * Android gọi GET /api/tiers/config sau khi đăng nhập để đồng bộ
- * SessionManager.thresholdSilver/Gold/Platinum với giá trị thực trong DB.
- * Nhờ đó admin chỉ cần UPDATE bảng tier_config — app tự cập nhật ở lần
- * đăng nhập tiếp theo, không cần release bản app mới.
- *
- * Response: { "silver": 500, "gold": 1500, "platinum": 3000 }
- *
- * Endpoint yêu cầu JWT (được bảo vệ bởi SecurityConfig /api/** chain).
- */
 @RestController
 @RequestMapping("/api/tiers")
 public class TierConfigController {

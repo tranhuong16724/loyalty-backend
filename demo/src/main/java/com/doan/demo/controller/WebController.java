@@ -35,7 +35,7 @@ public class WebController {
     private static final int PAGE_SIZE_CUSTOMERS = 20;
     private static final int PAGE_SIZE_HISTORY   = 15;
 
-    // ── Trang chủ ─────────────────────────────────────────────────────────────
+
     @GetMapping("/")
     public String home(
             @RequestParam(required = false, defaultValue = "")  String search,
@@ -43,7 +43,7 @@ public class WebController {
             @RequestParam(required = false, defaultValue = "0")  int historyPage,
             Model model) {
 
-        // ── Danh sách khách hàng — phân trang ────────────────────────────────
+        //  Danh sách khách hàng — phân trang
         Pageable customerPageable = PageRequest.of(
                 Math.max(page, 0), PAGE_SIZE_CUSTOMERS, Sort.by("id").descending());
 
@@ -64,7 +64,7 @@ public class WebController {
             }
         }
 
-        // ── Thống kê voucher — dùng GROUP BY thay vì findAll() ───────────────
+        // ── Thống kê voucher
         Map<Long, Long> voucherUsageMap = new HashMap<>();
         for (Object[] row : voucherUsageRepository.countGroupByVoucherId()) {
             voucherUsageMap.put((Long) row[0], (Long) row[1]);
@@ -72,7 +72,7 @@ public class WebController {
         Map<Long, String> voucherNameMap = new HashMap<>();
         voucherRepository.findAll().forEach(v -> voucherNameMap.put(v.getId(), v.getName()));
 
-        // ── Lịch sử đổi voucher — phân trang ────────────────────────────────
+        // ── Lịch sử đổi voucher —
         Pageable historyPageable = PageRequest.of(
                 Math.max(historyPage, 0), PAGE_SIZE_HISTORY, Sort.by("id").descending());
         Page<VoucherUsage> historyPage2 = voucherUsageRepository.findAll(historyPageable);
@@ -102,7 +102,7 @@ public class WebController {
         return "index";
     }
 
-    // ── Chi tiết khách hàng ───────────────────────────────────────────────────
+    // ── Chi tiết khách hàng
     @GetMapping("/customer/{id}")
     public String customerDetail(@PathVariable Long id, Model model) {
         Customer customer = customerRepository.findById(id)
@@ -115,7 +115,7 @@ public class WebController {
         return "customer_detail";
     }
 
-    // ── Xóa khách hàng ────────────────────────────────────────────────────────
+    // ── Xóa khách hàng
     @GetMapping("/block-customer/{id}")
     public String blockCustomer(@PathVariable Long id) {
         Customer customer = customerRepository.findById(id)
@@ -123,8 +123,19 @@ public class WebController {
         customer.setStatus("BLOCKED");
         customerRepository.save(customer);
         return "redirect:/"; }
+    @GetMapping("/unblock-customer/{id}")
+    public String unblockCustomer(@PathVariable Long id) {
 
-    // ── Thêm voucher ──────────────────────────────────────────────────────────
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
+
+        customer.setStatus("ACTIVE");
+        customerRepository.save(customer);
+
+        return "redirect:/";
+    }
+
+    // ── Thêm voucher
     @PostMapping("/add-voucher")
     public String addVoucher(
             @RequestParam String name,
@@ -204,9 +215,6 @@ public class WebController {
                 : "redirect:/";
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // XÁC NHẬN MÃ QR / VOUCHER
-    // ─────────────────────────────────────────────────────────────────────────
 
     @PostMapping("/verify-voucher")
     public String verifyVoucher(@RequestParam String code, Model model) {

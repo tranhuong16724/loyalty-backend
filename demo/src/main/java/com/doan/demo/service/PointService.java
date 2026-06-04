@@ -9,13 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
-/**
- * Toàn bộ nghiệp vụ liên quan đến điểm thưởng.
- *
- * Trước đây logic này bị copy-paste ở 2 chỗ trong CustomerController
- * (addPoints và verifyVoucher đều có đoạn applyEarnPoints riêng).
- * Giờ chỉ còn một nơi duy nhất.
- */
+
 @Service
 public class PointService {
 
@@ -51,12 +45,6 @@ public class PointService {
                 String.format("Mua hàng %.0fđ → +%d điểm", amount, basePoints));
     }
 
-    /**
-     * Cộng điểm theo nghiệp vụ bất kỳ (dùng voucher, deal, bonus...).
-     * Tính thêm % bonus theo hạng, thưởng lên hạng, ghi transaction, gửi FCM.
-     *
-     * @return chuỗi tóm tắt kết quả
-     */
     @Transactional
     public String applyEarnPoints(Customer c, int basePoints, String description) {
         int bonusPct    = tierService.getBonusPercent(c.getTier());

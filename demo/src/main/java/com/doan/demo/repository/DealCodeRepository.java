@@ -13,7 +13,6 @@ public interface DealCodeRepository extends JpaRepository<DealCode, Long> {
 
     Optional<DealCode> findByCode(String code);
 
-    /** Xóa các mã hết hạn */
     @Modifying
     @Transactional
     @Query("DELETE FROM DealCode d WHERE d.expiresAt < :now")

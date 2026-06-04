@@ -17,31 +17,26 @@ public class MenuController {
 
     @Autowired private MenuItemRepository menuItemRepository;
 
-    /** GET /api/menu — App lấy danh sách món đang bán (có imageUrl) */
     @GetMapping
     public List<MenuItem> getActiveMenu() {
         return menuItemRepository.findByActiveTrueOrderByIdAsc();
     }
 
-    /** GET /api/menu/category/{cat} — App lọc theo danh mục */
     @GetMapping("/category/{category}")
     public List<MenuItem> getByCategory(@PathVariable String category) {
         return menuItemRepository.findByCategoryAndActiveTrueOrderByIdAsc(category);
     }
 
-    /** GET /api/menu/all — Admin dùng (cả món tắt) */
     @GetMapping("/all")
     public List<MenuItem> getAll() {
         return menuItemRepository.findAll();
     }
 
-    /** POST /api/menu — Admin thêm món mới (kèm imageUrl) */
     @PostMapping
     public ResponseEntity<MenuItem> createItem(@RequestBody MenuItem item) {
         return ResponseEntity.ok(menuItemRepository.save(item));
     }
 
-    /** PUT /api/menu/{id} — Admin cập nhật toàn bộ thông tin món */
     @PutMapping("/{id}")
     public ResponseEntity<MenuItem> updateItem(@PathVariable Long id,
                                                @RequestBody MenuItem updated) {
@@ -60,7 +55,6 @@ public class MenuController {
         return ResponseEntity.ok(menuItemRepository.save(item));
     }
 
-    /** PATCH /api/menu/{id}/image — Chỉ cập nhật URL ảnh */
     @PatchMapping("/{id}/image")
     public ResponseEntity<String> updateImage(@PathVariable Long id,
                                               @RequestBody Map<String, String> body) {
@@ -73,7 +67,6 @@ public class MenuController {
         return ResponseEntity.ok("Cập nhật ảnh thành công: " + item.getName());
     }
 
-    /** DELETE /api/menu/{id} — Admin xóa món */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteItem(@PathVariable Long id) {
         if (!menuItemRepository.existsById(id)) return ResponseEntity.notFound().build();

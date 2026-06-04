@@ -14,11 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Filter chạy một lần mỗi request.
- * Với các API /api/** yêu cầu xác thực: đọc header Authorization: Bearer <token>,
- * xác thực JWT và set Authentication vào SecurityContext.
- */
+
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 

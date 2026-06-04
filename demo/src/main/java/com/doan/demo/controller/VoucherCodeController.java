@@ -24,7 +24,7 @@ public class VoucherCodeController {
 
     @Autowired
     private VoucherRepository voucherRepository;
-
+// khách hsngf tạo mã
     @PostMapping("/generate-code")
     public Map<String, Object> generateCode(
             @RequestParam Long usageId,

@@ -7,18 +7,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * OTP in-memory đơn giản cho luồng quên mật khẩu.
- *
- * Trong production nên dùng Redis để share OTP giữa nhiều pod.
- * Hiện tại lưu trong memory — restart server sẽ mất OTP đang pending.
- *
- * Luồng:
- *   1. POST /api/customers/forgot-password/request  { phone }
- *      → sinh 6 số, gửi SMS/FCM, lưu vào map với TTL 5 phút
- *   2. POST /api/customers/forgot-password/verify   { phone, otp, newPassword }
- *      → kiểm tra OTP còn hạn → đổi mật khẩu → xóa OTP
- */
 @Service
 public class OtpService {
 
@@ -27,11 +15,11 @@ public class OtpService {
 
     private record OtpEntry(String otp, Instant expiresAt) {}
 
-    // Key = phone number
+    // dữ liệu lưu trữ trong ram của server ko lưu database
     private final Map<String, OtpEntry> store = new ConcurrentHashMap<>();
     private final Random random = new Random();
 
-    /** Sinh OTP mới, lưu và trả về (caller tự gửi cho user qua SMS/FCM). */
+//
     public String generateOtp(String phone) {
         StringBuilder sb = new StringBuilder(OTP_LENGTH);
         for (int i = 0; i < OTP_LENGTH; i++) sb.append(random.nextInt(10));

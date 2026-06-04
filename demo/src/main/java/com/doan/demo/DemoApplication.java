@@ -17,11 +17,6 @@ public class DemoApplication {
 		SpringApplication.run(DemoApplication.class, args);
 	}
 
-	/**
-	 * Chạy 1 lần khi khởi động.
-	 * Nếu chưa có admin hoặc password không phải BCrypt → tự tạo/reset.
-	 * Xóa method này sau khi đăng nhập thành công lần đầu.
-	 */
 	@Bean
 	public CommandLineRunner initAdmin(AdminRepository adminRepository) {
 		return args -> {

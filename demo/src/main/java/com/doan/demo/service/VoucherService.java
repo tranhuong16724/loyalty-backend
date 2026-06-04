@@ -8,13 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 
-/**
- * Nghiệp vụ đổi voucher và xác nhận mã (QR / nhập tay).
- *
- * Trước đây logic bị copy-paste ở 3 nơi:
- *   CustomerController.redeem(), CustomerController.verifyVoucher(), WebController.doVerify()
- * Giờ chỉ còn một class duy nhất, có @Transactional đúng chỗ.
- */
 @Service
 public class VoucherService {
 

@@ -40,11 +40,12 @@ public class FcmService {
      * @param dataPayload  Map key-value String (type, message, newPoints, v.v.)
      */
     public void sendDataMessage(String fcmToken, Map<String, String> dataPayload) {
-        if (fcmToken == null || fcmToken.isBlank()) {
+        if (fcmToken == null || fcmToken.isBlank()) {// kiểm tra có token không
             log.warn("FCM token is empty, skip sending.");
             return;
         }
         try {
+            //lấy quyền từ google
             String accessToken = getAccessToken();
             String body = buildDataMessage(fcmToken, dataPayload);
             postToFcm(accessToken, body);
@@ -53,10 +54,7 @@ public class FcmService {
         }
     }
 
-    /**
-     * Gửi Notification + Data Message tới 1 thiết bị.
-     * Dùng khi muốn Android tự hiển thị notification kể cả khi app bị kill.
-     */
+//hàm guiwrthoong báo
     public void sendNotification(String fcmToken, String title, String body,
                                  Map<String, String> dataPayload) {
         if (fcmToken == null || fcmToken.isBlank()) {
@@ -65,8 +63,9 @@ public class FcmService {
         }
         try {
             String accessToken = getAccessToken();
+            //tạo ội dung thông báo
             String requestBody = buildNotificationMessage(fcmToken, title, body, dataPayload);
-            postToFcm(accessToken, requestBody);
+            postToFcm(accessToken, requestBody);//gửi sang gogle
         } catch (IOException e) {
             log.error("FCM sendNotification failed: {}", e.getMessage());
         }

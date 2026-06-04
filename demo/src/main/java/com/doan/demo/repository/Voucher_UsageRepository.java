@@ -13,13 +13,10 @@ public interface Voucher_UsageRepository extends JpaRepository<VoucherUsage, Lon
 
     List<VoucherUsage> findByCustomerId(Long customerId);
 
-    /** Tìm theo mã 6 ký tự — dùng cho verify-voucher */
     Optional<VoucherUsage> findByCode(String code);
 
-    /** Phân trang lịch sử đổi voucher trên trang admin */
     Page<VoucherUsage> findAll(Pageable pageable);
 
-    /** Thống kê: số lượt đổi theo từng voucherId (không load toàn bộ record) */
     @Query("SELECT u.voucherId, COUNT(u) FROM VoucherUsage u GROUP BY u.voucherId")
     List<Object[]> countGroupByVoucherId();
 }

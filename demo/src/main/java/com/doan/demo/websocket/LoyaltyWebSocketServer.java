@@ -8,14 +8,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * WebSocket Server Endpoint cho Spring Boot
-
- * ── Nguyên lý hoạt động (Mạng máy tính & Truyền thông dữ liệu) ───────────
- * HTTP (stateless): Client gửi request → Server trả response → đóng kết nối
- * WebSocket (stateful): Client gửi HTTP Upgrade → Server đồng ý (101) →
- *   TCP connection duy trì → Server có thể PUSH dữ liệu bất kỳ lúc nào
- */
 @ServerEndpoint("/ws/loyalty/{customerId}")
 @Component
 public class LoyaltyWebSocketServer {
