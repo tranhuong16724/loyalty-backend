@@ -93,10 +93,10 @@
         .scan-btn-row { display: flex; gap: 10px; margin-bottom: 14px; }
         .manual-panel { padding: 20px; background: #f8faf8; border-radius: 14px; border: 1.5px solid var(--border); }
 
-        /* ── WS badge ── */
-        .ws-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; background: rgba(0,0,0,.06); color: #555; }
-        .ws-dot { width: 8px; height: 8px; border-radius: 50%; background: #aaa; }
-        .ws-dot.online { background: #4ade80; animation: pulse 2s infinite; }
+        /*!* ── WS badge ── *!*/
+        /*.ws-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; background: rgba(0,0,0,.06); color: #555; }*/
+        /*.ws-dot { width: 8px; height: 8px; border-radius: 50%; background: #aaa; }*/
+        /*.ws-dot.online { background: #4ade80; animation: pulse 2s infinite; }*/
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
 
         /* ── Modal ── */
@@ -645,13 +645,7 @@
     <div id="verify" class="table-container">
         <div class="section-title"><i class="bi bi-qr-code-scan me-2"></i>Quét QR Khách Hàng</div>
 
-        <!-- WS status -->
-        <div class="mb-3">
-            <span class="ws-badge">
-                <span class="ws-dot" id="wsDot"></span>
-                <span id="wsStatus">WS offline</span>
-            </span>
-        </div>
+
 
         <!-- Tab buttons -->
         <div style="display:flex;gap:8px;margin-bottom:20px;">
@@ -669,14 +663,27 @@
         <div id="tabEarn">
             <div class="qr-layout">
                 <!-- CỘT TRÁI: Camera -->
-                <div>
-                    <h6 class="fw-bold mb-2" style="color:var(--green);">📸 Quét QR cá nhân của khách</h6>
+                <div class="manual-panel">
+                    <h6 class="fw-bold mb-2">
+                        📸 Quét QR cá nhân của khách
+                    </h6>
+
                     <div class="scan-btn-row">
-                        <button class="btn btn-success btn-sm" onclick="startScanEarn()">▶ Bắt đầu quét</button>
-                        <button class="btn btn-secondary btn-sm" onclick="stopScanEarn()">⏹ Dừng</button>
+                        <button class="btn btn-success btn-sm"
+                                onclick="startScanEarn()">
+                            ▶ Bắt đầu quét
+                        </button>
+
+                        <button class="btn btn-secondary btn-sm"
+                                onclick="stopScanEarn()">
+                            ⏹ Dừng
+                        </button>
                     </div>
+
                     <div id="qr-reader-earn"></div>
-                    <div id="earnScanResult" class="qr-result-box"></div>
+
+                    <div id="earnScanResult"
+                         class="qr-result-box"></div>
                 </div>
 
                 <!-- CỘT PHẢI: Nhập tay + số tiền -->
@@ -684,13 +691,13 @@
                     <div class="manual-panel">
                         <h6 class="fw-bold mb-1">⌨️ Nhập mã hoặc dán mã QR</h6>
                         <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">
-                            Mã QR cá nhân có dạng <b>KB-{ID}-{timestamp}</b> — app hiển thị bên dưới ảnh QR
+                            Mã QR cá nhân có dạng <b>M XXX XXX</b> — app hiển thị bên dưới ảnh QR
                         </p>
                         <div class="mb-3">
                             <label class="form-label" style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;">Mã QR khách hàng</label>
                             <input type="text" id="earnQrCode" class="form-control"
-                                   placeholder="vd: KB-5-1748700000000"
-                                   style="font-weight:600;font-size:14px;"/>
+                                   placeholder="vd: M 042 250 hoặc quét camera"
+                                   style="font-weight:600;font-size:14px; text-transform:uppercase;letter-spacing:2px;"/>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;">Số tiền giao dịch (VNĐ)</label>
@@ -939,43 +946,38 @@
         if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop().catch(() => {});
     }
     let isVerifying = false;
-    // Format QR từ App: "KBVOUCHER|{code 6 ký tự}" hoặc "KB-{id}-{timestamp}" (QR cá nhân)
     function handleQrResult(text) {
         if (isVerifying) return;
         isVerifying = true;
 
-        // QR cá nhân tích điểm: KB-{id}-{timestamp} → chuyển sang tab Tích điểm
-        if (text.toUpperCase().startsWith('KB-') && text.split('-').length >= 3) {
+        const normalized = text.trim().toUpperCase().replace(/\s+/g, '');
+
+        // QR cá nhân → dạng M + 6 chữ số (vd: M042250)
+        if (/^M\d{6}$/.test(normalized)) {
             switchTab('earn');
-            document.getElementById('earnQrCode').value = text;
+            document.getElementById('earnQrCode').value = normalized;
             showScanResult('📷 QR cá nhân đã quét — chuyển sang tab Tích điểm', null);
-            showEarnScanResult('📷 Đã quét: ' + text + ' — Nhập số tiền rồi xác nhận!', null);
+            showEarnScanResult('📷 Đã quét: ' + normalized + ' — Nhập số tiền rồi xác nhận!', null);
             isVerifying = false;
             return;
         }
 
+        // QR voucher/deal → KBVOUCHER|XXXXXX hoặc KBDEAL|XXXXXX
         const parts = text.split('|');
-        if (
-            parts.length === 2 &&
-            (
-                parts[0] === 'KBVOUCHER' ||
-                parts[0] === 'KBDEAL'
-            )
-        ){
+        if (parts.length === 2 && (parts[0] === 'KBVOUCHER' || parts[0] === 'KBDEAL')) {
             const code = parts[1].trim().toUpperCase();
             if (code.length === 6) {
-                callVerifyApi(code);
+                callVerifyApi(code); // isVerifying reset trong finally bên dưới
             } else {
                 showScanResult('❌ Mã QR không hợp lệ: ' + text, false);
                 isVerifying = false;
             }
-        } else {
-            showScanResult('ℹ️ Mã quét: ' + text + ' (Không phải mã voucher/ưu đãi)', false);
-            isVerifying = false;
+            return;
         }
 
+        showScanResult('ℹ️ Không nhận ra định dạng: ' + text, false);
+        isVerifying = false;
     }
-
     function verifyManual() {
         const code = document.getElementById('manualCode').value.trim().toUpperCase();
         if (!code || code.length !== 6) {
@@ -1012,6 +1014,9 @@
                 const msg = '❌ Lỗi kết nối server: ' + err.message;
                 showScanResult(msg, false);
                 showVerifyResult(msg, false);
+            })
+            .finally(() => {
+                isVerifying = false;
             });
     }
 

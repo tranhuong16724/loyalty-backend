@@ -225,7 +225,7 @@ public class WebController {
     }
 
     // ── Tích điểm từ QR cá nhân của khách hàng ───────────────────────────────
-    // QR có dạng "KB-{customerId}-{timestamp}" — Admin quét rồi nhập số tiền
+
     @PostMapping("/api/scan-qr")
     @ResponseBody
     public Map<String, Object> scanQr(
@@ -233,86 +233,74 @@ public class WebController {
             @RequestParam double amount) {
 
         Map<String, Object> res = new LinkedHashMap<>();
-
         try {
-            // Normalize: trim, uppercase, bỏ prefix nếu app thêm vào
-            String normalized = code.trim().toUpperCase();
+            // Chuẩn hóa: bỏ khoảng trắng, uppercase
+            // "M 042 250" → "M042250", "m042250" → "M042250"
+            String normalized = code.trim().toUpperCase().replaceAll("\\s+", "");
 
-            // Kiểm tra đúng định dạng KB-{id}-{timestamp}
-            if (!normalized.startsWith("KB-")) {
+            if (!normalized.matches("M\\d{6}")) {
                 res.put("success", false);
-                res.put("message", "❌ Mã QR không hợp lệ! Vui lòng quét đúng mã QR cá nhân của khách hàng.");
+                res.put("message", "❌ Mã không hợp lệ! Định dạng đúng: M XXXXXX (6 chữ số)");
                 return res;
             }
 
-            // Parse customerId từ phần giữa: KB-<id>-<timestamp>
-            String[] parts = normalized.split("-");
-            if (parts.length < 3) {
-                res.put("success", false);
-                res.put("message", "❌ Định dạng mã QR không đúng!");
-                return res;
-            }
+            int  displayCode = Integer.parseInt(normalized.substring(1));
+            long modInv      = modInverse(13337L, 1_000_000L);
+            long customerId  = (displayCode * modInv) % 1_000_000L;
 
-            long customerId = Long.parseLong(parts[1]);
+            return processEarnPoints(customerId, amount, res);
 
-            // Kiểm tra timestamp không quá 10 phút (600_000 ms) để tránh replay
-            long timestamp = Long.parseLong(parts[2]);
-            long now       = System.currentTimeMillis();
-            if (now - timestamp > 600_000) {
-                res.put("success", false);
-                res.put("message", "⏰ Mã QR đã hết hạn! Yêu cầu khách mở lại app để làm mới mã.");
-                return res;
-            }
-
-            // Kiểm tra số tiền hợp lệ
-            if (amount <= 0) {
-                res.put("success", false);
-                res.put("message", "❌ Số tiền giao dịch phải lớn hơn 0!");
-                return res;
-            }
-
-            // Tìm khách hàng
-            Customer customer = customerRepository.findById(customerId).orElse(null);
-            if (customer == null) {
-                res.put("success", false);
-                res.put("message", "❌ Không tìm thấy khách hàng!");
-                return res;
-            }
-
-            // Kiểm tra tài khoản không bị khóa
-            if ("BLOCKED".equals(customer.getStatus())) {
-                res.put("success", false);
-                res.put("message", "🔒 Tài khoản khách hàng đang bị khóa!");
-                return res;
-            }
-
-            // Gọi PointService để tích điểm (có tính bonus hạng + nâng hạng + FCM)
-            String oldTier = customer.getTier();
-            String result  = pointService.earnFromPurchase(customerId, amount);
-
-            // Reload để lấy điểm và hạng mới nhất sau khi save
-            customer = customerRepository.findById(customerId).orElse(customer);
-
-            res.put("success",      true);
-            res.put("message",      "✅ Tích điểm thành công!");
-            res.put("customerName", customer.getFullName());
-            res.put("customerId",   customerId);
-            res.put("newPoints",    customer.getPoints());
-            res.put("tier",         customer.getTierBadge());
-            res.put("tierChanged",  !oldTier.equals(customer.getTier()));
-            res.put("detail",       result);
-
-            return res;
-
-        } catch (NumberFormatException e) {
-            res.put("success", false);
-            res.put("message", "❌ Mã QR không hợp lệ — không thể đọc ID khách hàng!");
-            return res;
         } catch (Exception e) {
             res.put("success", false);
             res.put("message", "❌ Lỗi hệ thống: " + e.getMessage());
             return res;
         }
+    }
+
+    // Tách logic xử lý điểm — dùng chung cho cả 2 luồng
+    private Map<String, Object> processEarnPoints(long customerId,
+                                                  double amount,
+                                                  Map<String, Object> res) {
+        if (amount < 1000) {
+            res.put("success", false);
+            res.put("message", "❌ Số tiền tối thiểu 1.000đ!");
+            return res;
+        }
+        Customer customer = customerRepository.findById(customerId).orElse(null);
+        if (customer == null) {
+            res.put("success", false);
+            res.put("message", "❌ Không tìm thấy khách hàng!");
+            return res;
+        }
+        if ("BLOCKED".equals(customer.getStatus())) {
+            res.put("success", false);
+            res.put("message", "🔒 Tài khoản khách hàng đang bị khóa!");
+            return res;
+        }
+
+        String oldTier = customer.getTier();
+        pointService.earnFromPurchase(customerId, amount);
+        customer = customerRepository.findById(customerId).orElse(customer);
+
+        res.put("success",      true);
+        res.put("message",      "✅ Tích điểm thành công!");
+        res.put("customerName", customer.getFullName());
+        res.put("customerId",   customerId);
+        res.put("newPoints",    customer.getPoints());
+        res.put("tier",         customer.getTierBadge());
+        res.put("tierChanged",  !oldTier.equals(customer.getTier()));
+        return res;
+    }
+
+    // Modular Inverse — Extended Euclidean
+    private long modInverse(long a, long mod) {
+        long[] r = extGcd(a, mod);
+        return (r[1] % mod + mod) % mod;
+    }
+    private long[] extGcd(long a, long b) {
+        if (b == 0) return new long[]{a, 1, 0};
+        long[] r = extGcd(b, a % b);
+        return new long[]{r[0], r[2], r[1] - (a / b) * r[2]};
     }
     // ── Thêm ưu đãi tuần ─────────────────────────────────────────────────────
     @PostMapping("/add-deal")
