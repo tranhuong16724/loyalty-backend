@@ -125,6 +125,14 @@ public class WebController {
         customer.setStatus("BLOCKED");
         customerRepository.save(customer);
         return "redirect:/"; }
+    @GetMapping("/unblock-customer/{id}")
+    public String unblockCustomer(@PathVariable Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
+        customer.setStatus("ACTIVE");
+        customerRepository.save(customer);
+        return "redirect:/";
+    }
 
     // ── Thêm voucher ──────────────────────────────────────────────────────────
     @PostMapping("/add-voucher")
@@ -288,7 +296,20 @@ public class WebController {
         String oldTier = customer.getTier();
         pointService.earnFromPurchase(customerId, amount);
         customer = customerRepository.findById(customerId).orElse(customer);
+        String token = customer.getFcmToken();
+        if (token != null && !token.isBlank()) {
+            Map<String, String> fcmData = new HashMap<>();
+            fcmData.put("type",      "POINTS_UPDATE");
+            fcmData.put("newPoints", String.valueOf(customer.getPoints()));
+            fcmService.sendDataMessage(token, fcmData);
 
+            if (!oldTier.equals(customer.getTier())) {
+                Map<String, String> tierData = new HashMap<>();
+                tierData.put("type",    "PROMO_ALERT");
+                tierData.put("message", "🏆 Chúc mừng! Bạn vừa lên hạng " + customer.getTierBadge() + "!");
+                fcmService.sendDataMessage(token, tierData);
+            }
+        }
         res.put("success",      true);
         res.put("message",      "✅ Tích điểm thành công!");
         res.put("customerName", customer.getFullName());

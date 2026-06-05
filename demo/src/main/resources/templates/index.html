@@ -376,6 +376,10 @@
                     <a th:href="@{'/block-customer/' + ${c.id}}"
                        class="btn btn-outline-danger btn-sm"
                        onclick="return confirm('khóa tài khoản')">Khóa</a>
+                    <a th:if="${c.status == 'BLOCKED'}"
+                       th:href="@{'/unblock-customer/' + ${c.id}}"
+                       class="btn btn-outline-success btn-sm"
+                       onclick="return confirm('Mở khóa tài khoản này?')">🔓 Mở khóa</a>
                 </td>
             </tr>
             <tr th:if="${customers.isEmpty()}">

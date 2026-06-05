@@ -97,17 +97,20 @@ public class CustomerController {
         if (opt.isEmpty()) {
             res.put("success", false);
             res.put("message", "Số điện thoại này chưa đăng ký thành viên!");
-            return ResponseEntity.status(401).body(res);
+            return ResponseEntity.ok(res);
+            //return ResponseEntity.status(401).body(res);
         }
         Customer c = opt.get();
         if ("BLOCKED".equals(c.getStatus())) {
             res.put("success", false);
             res.put("message", "Tài khoản đã bị khóa!");
-            return ResponseEntity.status(403).body(res); }
+            return ResponseEntity.ok(res);}
+           // return ResponseEntity.status(403).body(res); }
         if (c.getPassword() == null || !passwordEncoder.matches(loginInfo.getPassword(), c.getPassword())) {
             res.put("success", false);
             res.put("message", c.getPassword() == null ? "Tài khoản chưa thiết lập mật khẩu!" : "Sai mật khẩu rồi!");
-            return ResponseEntity.status(401).body(res);
+            return ResponseEntity.ok(res);
+            //return ResponseEntity.status(401).body(res);
         }
 
         String correctTier = tierService.calcTier(c.getPoints());
