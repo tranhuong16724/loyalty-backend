@@ -230,11 +230,13 @@ public class WebController {
     public Map<String, Object> scanQr(
             @RequestParam String code,
             @RequestParam double amount) {
+        System.out.println("==========SCAN QR==========");
+        System.out.println("CODE = " + code);
+        System.out.println("AMOUNT = " + amount);
 
         Map<String, Object> res = new LinkedHashMap<>();
         try {
-            // Chuẩn hóa: bỏ khoảng trắng, uppercase
-            // "M 042 250" → "M042250"
+
             String normalized = code.trim().toUpperCase().replaceAll("\\s+", "");
 
             if (!normalized.matches("M\\d{6}")) {
