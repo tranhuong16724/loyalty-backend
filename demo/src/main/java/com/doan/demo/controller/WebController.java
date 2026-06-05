@@ -3,6 +3,7 @@ package com.doan.demo.controller;
 import com.doan.demo.model.*;
 import com.doan.demo.repository.*;
 import com.doan.demo.service.FcmService;
+import com.doan.demo.service.PointService;
 import com.doan.demo.service.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,11 +32,12 @@ public class WebController {
     @Autowired private DealCodeRepository         dealCodeRepository;
     @Autowired private FcmService                 fcmService;
     @Autowired private VoucherService             voucherService;  // ← dùng thay doVerify()
+    @Autowired private PointService               pointService;
 
     private static final int PAGE_SIZE_CUSTOMERS = 20;
     private static final int PAGE_SIZE_HISTORY   = 15;
 
-
+    // ── Trang chủ ─────────────────────────────────────────────────────────────
     @GetMapping("/")
     public String home(
             @RequestParam(required = false, defaultValue = "")  String search,
@@ -43,7 +45,7 @@ public class WebController {
             @RequestParam(required = false, defaultValue = "0")  int historyPage,
             Model model) {
 
-        //  Danh sách khách hàng — phân trang
+        // ── Danh sách khách hàng — phân trang ────────────────────────────────
         Pageable customerPageable = PageRequest.of(
                 Math.max(page, 0), PAGE_SIZE_CUSTOMERS, Sort.by("id").descending());
 
@@ -64,7 +66,7 @@ public class WebController {
             }
         }
 
-        // ── Thống kê voucher
+        // ── Thống kê voucher — dùng GROUP BY thay vì findAll() ───────────────
         Map<Long, Long> voucherUsageMap = new HashMap<>();
         for (Object[] row : voucherUsageRepository.countGroupByVoucherId()) {
             voucherUsageMap.put((Long) row[0], (Long) row[1]);
@@ -72,7 +74,7 @@ public class WebController {
         Map<Long, String> voucherNameMap = new HashMap<>();
         voucherRepository.findAll().forEach(v -> voucherNameMap.put(v.getId(), v.getName()));
 
-        // ── Lịch sử đổi voucher —
+        // ── Lịch sử đổi voucher — phân trang ────────────────────────────────
         Pageable historyPageable = PageRequest.of(
                 Math.max(historyPage, 0), PAGE_SIZE_HISTORY, Sort.by("id").descending());
         Page<VoucherUsage> historyPage2 = voucherUsageRepository.findAll(historyPageable);
@@ -102,7 +104,7 @@ public class WebController {
         return "index";
     }
 
-    // ── Chi tiết khách hàng
+    // ── Chi tiết khách hàng ───────────────────────────────────────────────────
     @GetMapping("/customer/{id}")
     public String customerDetail(@PathVariable Long id, Model model) {
         Customer customer = customerRepository.findById(id)
@@ -115,7 +117,7 @@ public class WebController {
         return "customer_detail";
     }
 
-    // ── Xóa khách hàng
+    // ── Xóa khách hàng ────────────────────────────────────────────────────────
     @GetMapping("/block-customer/{id}")
     public String blockCustomer(@PathVariable Long id) {
         Customer customer = customerRepository.findById(id)
@@ -123,19 +125,8 @@ public class WebController {
         customer.setStatus("BLOCKED");
         customerRepository.save(customer);
         return "redirect:/"; }
-    @GetMapping("/unblock-customer/{id}")
-    public String unblockCustomer(@PathVariable Long id) {
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
-
-        customer.setStatus("ACTIVE");
-        customerRepository.save(customer);
-
-        return "redirect:/";
-    }
-
-    // ── Thêm voucher
+    // ── Thêm voucher ──────────────────────────────────────────────────────────
     @PostMapping("/add-voucher")
     public String addVoucher(
             @RequestParam String name,
@@ -215,6 +206,9 @@ public class WebController {
                 : "redirect:/";
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // XÁC NHẬN MÃ QR / VOUCHER
+    // ─────────────────────────────────────────────────────────────────────────
 
     @PostMapping("/verify-voucher")
     public String verifyVoucher(@RequestParam String code, Model model) {
@@ -228,6 +222,97 @@ public class WebController {
     @ResponseBody
     public Map<String, Object> verifyJson(@RequestParam String code) {
         return voucherService.verifyCode(code, null);
+    }
+
+    // ── Tích điểm từ QR cá nhân của khách hàng ───────────────────────────────
+    // QR có dạng "KB-{customerId}-{timestamp}" — Admin quét rồi nhập số tiền
+    @PostMapping("/api/scan-qr")
+    @ResponseBody
+    public Map<String, Object> scanQr(
+            @RequestParam String code,
+            @RequestParam double amount) {
+
+        Map<String, Object> res = new LinkedHashMap<>();
+
+        try {
+            // Normalize: trim, uppercase, bỏ prefix nếu app thêm vào
+            String normalized = code.trim().toUpperCase();
+
+            // Kiểm tra đúng định dạng KB-{id}-{timestamp}
+            if (!normalized.startsWith("KB-")) {
+                res.put("success", false);
+                res.put("message", "❌ Mã QR không hợp lệ! Vui lòng quét đúng mã QR cá nhân của khách hàng.");
+                return res;
+            }
+
+            // Parse customerId từ phần giữa: KB-<id>-<timestamp>
+            String[] parts = normalized.split("-");
+            if (parts.length < 3) {
+                res.put("success", false);
+                res.put("message", "❌ Định dạng mã QR không đúng!");
+                return res;
+            }
+
+            long customerId = Long.parseLong(parts[1]);
+
+            // Kiểm tra timestamp không quá 10 phút (600_000 ms) để tránh replay
+            long timestamp = Long.parseLong(parts[2]);
+            long now       = System.currentTimeMillis();
+            if (now - timestamp > 600_000) {
+                res.put("success", false);
+                res.put("message", "⏰ Mã QR đã hết hạn! Yêu cầu khách mở lại app để làm mới mã.");
+                return res;
+            }
+
+            // Kiểm tra số tiền hợp lệ
+            if (amount <= 0) {
+                res.put("success", false);
+                res.put("message", "❌ Số tiền giao dịch phải lớn hơn 0!");
+                return res;
+            }
+
+            // Tìm khách hàng
+            Customer customer = customerRepository.findById(customerId).orElse(null);
+            if (customer == null) {
+                res.put("success", false);
+                res.put("message", "❌ Không tìm thấy khách hàng!");
+                return res;
+            }
+
+            // Kiểm tra tài khoản không bị khóa
+            if ("BLOCKED".equals(customer.getStatus())) {
+                res.put("success", false);
+                res.put("message", "🔒 Tài khoản khách hàng đang bị khóa!");
+                return res;
+            }
+
+            // Gọi PointService để tích điểm (có tính bonus hạng + nâng hạng + FCM)
+            String oldTier = customer.getTier();
+            String result  = pointService.earnFromPurchase(customerId, amount);
+
+            // Reload để lấy điểm và hạng mới nhất sau khi save
+            customer = customerRepository.findById(customerId).orElse(customer);
+
+            res.put("success",      true);
+            res.put("message",      "✅ Tích điểm thành công!");
+            res.put("customerName", customer.getFullName());
+            res.put("customerId",   customerId);
+            res.put("newPoints",    customer.getPoints());
+            res.put("tier",         customer.getTierBadge());
+            res.put("tierChanged",  !oldTier.equals(customer.getTier()));
+            res.put("detail",       result);
+
+            return res;
+
+        } catch (NumberFormatException e) {
+            res.put("success", false);
+            res.put("message", "❌ Mã QR không hợp lệ — không thể đọc ID khách hàng!");
+            return res;
+        } catch (Exception e) {
+            res.put("success", false);
+            res.put("message", "❌ Lỗi hệ thống: " + e.getMessage());
+            return res;
+        }
     }
     // ── Thêm ưu đãi tuần ─────────────────────────────────────────────────────
     @PostMapping("/add-deal")

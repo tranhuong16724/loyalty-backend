@@ -35,7 +35,7 @@
                     #e2eef8,
                     #eef3fb
             );
-         position: fixed; top: 0; left: 0; z-index: 100; overflow-y: auto; }
+            position: fixed; top: 0; left: 0; z-index: 100; overflow-y: auto; }
         .sidebar .brand { padding: 20px; color: #1a4fa8; ; font-size: 22px; font-weight: 700; border-bottom: 1px solid #2d3f50; }
         .sidebar .nav-link {  color: #1e3a6e ; font-weight: 600; font-size: 15px;padding: 11px 20px; display: flex; align-items: center; gap: 10px; transition: .2s; font-size: 14px; }
         .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(55, 106, 207, 0.15);color: #1a4fa8; border-radius: 8px; margin: 0 8px; padding-left: 12px;  font-weight: 700;}
@@ -368,33 +368,12 @@
                     </div>
                 </td>
                 <td>
-
-                    <a th:href="@{'/customer/' + ${c.id}}"
-                       class="btn btn-outline-primary btn-sm me-1">
-                        Chi tiết
-                    </a>
-
-                    <button class="btn btn-warning btn-sm me-1"
-                            onclick="openAdjust(this)"
-                            th:data-id="${c.id}"
-                            th:data-name="${c.fullName}">
-                        ± Điểm
-                    </button>
-
-                    <a th:if="${c.status != 'BLOCKED'}"
-                       th:href="@{'/block-customer/' + ${c.id}}"
+                    <a th:href="@{'/customer/' + ${c.id}}" class="btn btn-outline-primary btn-sm me-1">Chi tiết</a>
+                    <button class="btn btn-warning btn-sm me-1" onclick="openAdjust(this)"
+                            th:data-id="${c.id}" th:data-name="${c.fullName}">± Điểm</button>
+                    <a th:href="@{'/block-customer/' + ${c.id}}"
                        class="btn btn-outline-danger btn-sm"
-                       onclick="return confirm('Khóa tài khoản?')">
-                        Khóa
-                    </a>
-
-                    <a th:if="${c.status == 'BLOCKED'}"
-                       th:href="@{'/unblock-customer/' + ${c.id}}"
-                       class="btn btn-outline-success btn-sm"
-                       onclick="return confirm('Mở khóa tài khoản?')">
-                        Mở khóa
-                    </a>
-
+                       onclick="return confirm('khóa tài khoản')">Khóa</a>
                 </td>
             </tr>
             <tr th:if="${customers.isEmpty()}">
@@ -664,9 +643,7 @@
 
     <!-- ══ XÁC NHẬN MÃ QR / ƯU ĐÃI ══════════════════════════ -->
     <div id="verify" class="table-container">
-        <div class="section-title"><i class="bi bi-qr-code-scan me-2"></i>Xác nhận Voucher / Ưu đãi (Quét QR hoặc nhập mã)</div>
-        <p class="text-muted" style="font-size:13px;margin-bottom:16px;">
-        </p>
+        <div class="section-title"><i class="bi bi-qr-code-scan me-2"></i>Quét QR Khách Hàng</div>
 
         <!-- WS status -->
         <div class="mb-3">
@@ -676,41 +653,106 @@
             </span>
         </div>
 
-        <div class="qr-layout">
-            <!-- CỘT TRÁI: Camera scanner -->
-            <div>
-                <h6 class="fw-bold mb-2" style="color:var(--green);">📸 Quét bằng camera</h6>
-                <div class="scan-btn-row">
-                    <button class="btn btn-success btn-sm" onclick="startScan()">▶ Bắt đầu quét</button>
-                    <button class="btn btn-secondary btn-sm" onclick="stopScan()">⏹ Dừng</button>
-                </div>
-                <div id="qr-reader"></div>
-                <div id="scanResult" class="qr-result-box"></div>
-            </div>
+        <!-- Tab buttons -->
+        <div style="display:flex;gap:8px;margin-bottom:20px;">
+            <button id="tabBtnEarn" onclick="switchTab('earn')"
+                    style="padding:8px 20px;border-radius:20px;border:none;font-weight:700;font-size:14px;cursor:pointer;background:var(--green);color:#fff;">
+                ⭐ Tích điểm mua hàng
+            </button>
+            <button id="tabBtnVerify" onclick="switchTab('verify')"
+                    style="padding:8px 20px;border-radius:20px;border:2px solid var(--green);font-weight:700;font-size:14px;cursor:pointer;background:#fff;color:var(--green);">
+                🎟 Xác nhận Voucher / Ưu đãi
+            </button>
+        </div>
 
-            <!-- CỘT PHẢI: Nhập tay -->
-            <div>
-                <div class="manual-panel">
-                    <h6 class="fw-bold mb-1">⌨️ Nhập mã thủ công</h6>
-                    <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">
-                        Nhập mã 6 ký tự hiển thị dưới QR trên App (vd: A3K9XZ)
-                    </p>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;">Mã xác nhận (6 ký tự)</label>
-                        <input type="text" id="manualCode" class="form-control" placeholder="vd: A3K9XZ"
-                               maxlength="6" style="text-transform:uppercase;letter-spacing:3px;font-weight:700;font-size:16px"/>
+        <!-- ═══ TAB 1: TÍCH ĐIỂM QR CÁ NHÂN ═══ -->
+        <div id="tabEarn">
+            <div class="qr-layout">
+                <!-- CỘT TRÁI: Camera -->
+                <div>
+                    <h6 class="fw-bold mb-2" style="color:var(--green);">📸 Quét QR cá nhân của khách</h6>
+                    <div class="scan-btn-row">
+                        <button class="btn btn-success btn-sm" onclick="startScanEarn()">▶ Bắt đầu quét</button>
+                        <button class="btn btn-secondary btn-sm" onclick="stopScanEarn()">⏹ Dừng</button>
                     </div>
-                    <button class="btn btn-success w-100" onclick="verifyManual()">✅ Xác nhận</button>
+                    <div id="qr-reader-earn"></div>
+                    <div id="earnScanResult" class="qr-result-box"></div>
                 </div>
 
-                <div id="verifyResult" class="qr-result-box"></div>
-
-                <div class="mt-3">
-                    <h6 class="fw-bold" style="font-size:13px;color:var(--green);">📋 Xác nhận gần đây</h6>
-                    <div id="recentVerify" style="font-size:13px;color:var(--gray);">Chưa có xác nhận nào.</div>
+                <!-- CỘT PHẢI: Nhập tay + số tiền -->
+                <div>
+                    <div class="manual-panel">
+                        <h6 class="fw-bold mb-1">⌨️ Nhập mã hoặc dán mã QR</h6>
+                        <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">
+                            Mã QR cá nhân có dạng <b>KB-{ID}-{timestamp}</b> — app hiển thị bên dưới ảnh QR
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label" style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;">Mã QR khách hàng</label>
+                            <input type="text" id="earnQrCode" class="form-control"
+                                   placeholder="vd: KB-5-1748700000000"
+                                   style="font-weight:600;font-size:14px;"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;">Số tiền giao dịch (VNĐ)</label>
+                            <input type="number" id="earnAmount" class="form-control"
+                                   placeholder="vd: 50000" min="1000" step="1000"
+                                   style="font-weight:600;font-size:16px;"/>
+                            <div style="font-size:11px;color:var(--gray);margin-top:4px;">
+                                1.000đ = 1 điểm | Silver +5% | Gold +10% | Platinum +20%
+                            </div>
+                        </div>
+                        <button class="btn btn-success w-100" style="font-size:15px;font-weight:700;" onclick="doEarnPoints()">
+                            ⭐ Xác nhận tích điểm
+                        </button>
+                    </div>
+                    <div id="earnResult" class="qr-result-box"></div>
+                    <div class="mt-3">
+                        <h6 class="fw-bold" style="font-size:13px;color:var(--green);">📋 Tích điểm gần đây</h6>
+                        <div id="recentEarn" style="font-size:13px;color:var(--gray);">Chưa có giao dịch nào.</div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- ═══ TAB 2: XÁC NHẬN VOUCHER / ƯU ĐÃI ═══ -->
+        <div id="tabVerify" style="display:none;">
+            <div class="qr-layout">
+                <!-- CỘT TRÁI: Camera scanner -->
+                <div>
+                    <h6 class="fw-bold mb-2" style="color:var(--green);">📸 Quét bằng camera</h6>
+                    <div class="scan-btn-row">
+                        <button class="btn btn-success btn-sm" onclick="startScan()">▶ Bắt đầu quét</button>
+                        <button class="btn btn-secondary btn-sm" onclick="stopScan()">⏹ Dừng</button>
+                    </div>
+                    <div id="qr-reader"></div>
+                    <div id="scanResult" class="qr-result-box"></div>
+                </div>
+
+                <!-- CỘT PHẢI: Nhập tay -->
+                <div>
+                    <div class="manual-panel">
+                        <h6 class="fw-bold mb-1">⌨️ Nhập mã thủ công</h6>
+                        <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">
+                            Nhập mã 6 ký tự hiển thị dưới QR trên App (vd: A3K9XZ)
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label" style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;">Mã xác nhận (6 ký tự)</label>
+                            <input type="text" id="manualCode" class="form-control" placeholder="vd: A3K9XZ"
+                                   maxlength="6" style="text-transform:uppercase;letter-spacing:3px;font-weight:700;font-size:16px"/>
+                        </div>
+                        <button class="btn btn-success w-100" onclick="verifyManual()">✅ Xác nhận</button>
+                    </div>
+
+                    <div id="verifyResult" class="qr-result-box"></div>
+
+                    <div class="mt-3">
+                        <h6 class="fw-bold" style="font-size:13px;color:var(--green);">📋 Xác nhận gần đây</h6>
+                        <div id="recentVerify" style="font-size:13px;color:var(--gray);">Chưa có xác nhận nào.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div><!-- /#verify -->
 
 </div><!-- /.main-content -->
@@ -781,6 +823,104 @@
     }
     connectAdminWs();
 
+    // ── Tab switch ────────────────────────────────────────────────────────────
+    function switchTab(tab) {
+        const isEarn = tab === 'earn';
+        document.getElementById('tabEarn').style.display   = isEarn ? '' : 'none';
+        document.getElementById('tabVerify').style.display = isEarn ? 'none' : '';
+        document.getElementById('tabBtnEarn').style.background   = isEarn ? 'var(--green)' : '#fff';
+        document.getElementById('tabBtnEarn').style.color        = isEarn ? '#fff' : 'var(--green)';
+        document.getElementById('tabBtnEarn').style.border       = isEarn ? 'none' : '2px solid var(--green)';
+        document.getElementById('tabBtnVerify').style.background = isEarn ? '#fff' : 'var(--green)';
+        document.getElementById('tabBtnVerify').style.color      = isEarn ? 'var(--green)' : '#fff';
+        document.getElementById('tabBtnVerify').style.border     = isEarn ? '2px solid var(--green)' : 'none';
+    }
+
+    // ── Earn QR Scanner (Tab 1) ───────────────────────────────────────────────
+    let html5QrCodeEarn = null;
+    const recentEarnList = [];
+
+    function startScanEarn() {
+        if (!html5QrCodeEarn) html5QrCodeEarn = new Html5Qrcode('qr-reader-earn');
+        html5QrCodeEarn.start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => {
+                stopScanEarn();
+                document.getElementById('earnQrCode').value = decodedText;
+                showEarnScanResult('📷 Đã quét: ' + decodedText, null);
+            },
+            () => {}
+        ).catch(err => showEarnScanResult('❌ Không thể mở camera: ' + err, false));
+    }
+
+    function stopScanEarn() {
+        if (html5QrCodeEarn && html5QrCodeEarn.isScanning) {
+            html5QrCodeEarn.stop().catch(() => {});
+        }
+    }
+
+    function doEarnPoints() {
+        const code   = document.getElementById('earnQrCode').value.trim();
+        const amount = parseFloat(document.getElementById('earnAmount').value);
+        if (!code) { showEarnResult('Vui lòng nhập hoặc quét mã QR của khách hàng!', false); return; }
+        if (!amount || amount < 1000) { showEarnResult('Vui lòng nhập số tiền hợp lệ (tối thiểu 1.000đ)!', false); return; }
+
+        showEarnResult('⏳ Đang xử lý...', null);
+
+        fetch('/api/scan-qr?code=' + encodeURIComponent(code) + '&amount=' + amount, {
+            method: 'POST'
+        })
+            .then(r => r.json())
+            .then(data => {
+                const ok  = data.success === true;
+                const msg = data.message || (ok ? '✅ Thành công!' : '❌ Thất bại!');
+                showEarnResult(msg, ok);
+                showEarnScanResult(msg, ok);
+                if (ok) {
+                    const extra = data.tierChanged
+                        ? '\n🏆 Khách hàng vừa lên hạng ' + data.tier + '!'
+                        : '';
+                    showEarnResult(
+                        '✅ ' + data.customerName + ' — +điểm | Tổng: ' + data.newPoints + ' | Hạng: ' + data.tier + extra,
+                        true
+                    );
+                    addRecentEarn(data.customerName, data.newPoints, data.tier, data.tierChanged);
+                    document.getElementById('earnQrCode').value  = '';
+                    document.getElementById('earnAmount').value  = '';
+                }
+            })
+            .catch(err => {
+                showEarnResult('❌ Lỗi kết nối server: ' + err.message, false);
+            });
+    }
+
+    function showEarnResult(msg, success) {
+        const box = document.getElementById('earnResult');
+        box.style.display = 'block';
+        box.className = 'qr-result-box ' + (success === true ? 'success' : success === false ? 'error' : '');
+        box.style.whiteSpace = 'pre-line';
+        box.textContent = msg;
+    }
+    function showEarnScanResult(msg, success) {
+        const box = document.getElementById('earnScanResult');
+        box.style.display = 'block';
+        box.className = 'qr-result-box ' + (success === true ? 'success' : success === false ? 'error' : '');
+        box.textContent = msg;
+    }
+    function addRecentEarn(name, points, tier, tierChanged) {
+        const time = new Date().toLocaleTimeString('vi-VN');
+        recentEarnList.unshift({ name, points, tier, tierChanged, time });
+        if (recentEarnList.length > 5) recentEarnList.pop();
+        document.getElementById('recentEarn').innerHTML = recentEarnList.map(r =>
+            `<div style="padding:8px 0;border-bottom:1px solid #eee;font-size:13px;">
+                <b>${r.name}</b> — ${r.points} điểm — ${r.tier}
+                ${r.tierChanged ? ' <span style="color:orange;font-weight:700;">🏆 Lên hạng!</span>' : ''}
+                <span style="color:#aaa;margin-left:8px;">${r.time}</span>
+            </div>`
+        ).join('');
+    }
+
     // ── QR Scanner ───────────────────────────────────────────────────────────────
     let html5QrCode = null;
     const recentList = [];
@@ -799,11 +939,21 @@
         if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop().catch(() => {});
     }
     let isVerifying = false;
-    // Format QR từ App: "KBVOUCHER|{code 6 ký tự}"
+    // Format QR từ App: "KBVOUCHER|{code 6 ký tự}" hoặc "KB-{id}-{timestamp}" (QR cá nhân)
     function handleQrResult(text) {
         if (isVerifying) return;
-
         isVerifying = true;
+
+        // QR cá nhân tích điểm: KB-{id}-{timestamp} → chuyển sang tab Tích điểm
+        if (text.toUpperCase().startsWith('KB-') && text.split('-').length >= 3) {
+            switchTab('earn');
+            document.getElementById('earnQrCode').value = text;
+            showScanResult('📷 QR cá nhân đã quét — chuyển sang tab Tích điểm', null);
+            showEarnScanResult('📷 Đã quét: ' + text + ' — Nhập số tiền rồi xác nhận!', null);
+            isVerifying = false;
+            return;
+        }
+
         const parts = text.split('|');
         if (
             parts.length === 2 &&
@@ -837,32 +987,32 @@
     function callVerifyApi(code) {
         showVerifyResult('⏳ Đang xác nhận...', null);
         showScanResult('⏳ Đang xác nhận mã ' + code + '...', null);
-    fetch('/api/verify-json?code=' + encodeURIComponent(code), {
-        method: 'POST'
-    })
-        .then(async r => {
-
-            if (!r.ok) {
-                throw new Error('HTTP ' + r.status);
-            }
-
-            return r.json();
+        fetch('/api/verify-json?code=' + encodeURIComponent(code), {
+            method: 'POST'
         })
-        .then(data => {
-            const ok  = data.success === true;
-            const msg = data.message || (ok ? '✅ Thành công!' : '❌ Thất bại!');
-            showScanResult(msg, ok);
-            showVerifyResult(msg, ok);
-            if (ok) {
-                addRecentVerify(code, data.voucherName || data.dealTitle, data.customerId);
-                document.getElementById('manualCode').value = '';
-            }
-        })
-        .catch(err => {
-            const msg = '❌ Lỗi kết nối server: ' + err.message;
-            showScanResult(msg, false);
-            showVerifyResult(msg, false);
-        });
+            .then(async r => {
+
+                if (!r.ok) {
+                    throw new Error('HTTP ' + r.status);
+                }
+
+                return r.json();
+            })
+            .then(data => {
+                const ok  = data.success === true;
+                const msg = data.message || (ok ? '✅ Thành công!' : '❌ Thất bại!');
+                showScanResult(msg, ok);
+                showVerifyResult(msg, ok);
+                if (ok) {
+                    addRecentVerify(code, data.voucherName || data.dealTitle, data.customerId);
+                    document.getElementById('manualCode').value = '';
+                }
+            })
+            .catch(err => {
+                const msg = '❌ Lỗi kết nối server: ' + err.message;
+                showScanResult(msg, false);
+                showVerifyResult(msg, false);
+            });
     }
 
     function showScanResult(msg, success) {
