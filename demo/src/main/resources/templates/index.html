@@ -1005,6 +1005,7 @@
                 const msg = data.message || (ok ? '✅ Thành công!' : '❌ Thất bại!');
                 showScanResult(msg, ok);
                 showVerifyResult(msg, ok);
+                console.log('scan-qr response:', JSON.stringify(data));
                 if (ok) {
                     addRecentVerify(code, data.voucherName || data.dealTitle, data.customerId);
                     document.getElementById('manualCode').value = '';

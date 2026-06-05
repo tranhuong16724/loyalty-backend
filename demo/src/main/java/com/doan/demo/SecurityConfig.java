@@ -117,10 +117,12 @@ public class SecurityConfig {
                                 "/api/deals/**",
 
                                 "/api/tiers/config",
-
+                                "/api/scan-qr",
+                                "/api/verify-json",
 
 //                                "/api/voucher-codes/generate-code",
                                 "/api/voucher-codes/verify-code"
+
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

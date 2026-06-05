@@ -244,7 +244,6 @@ public class WebController {
             long window = System.currentTimeMillis() / (5 * 60 * 1000L);
             final long MOD = 1_000_000L;
 
-            // Thử window hiện tại và ±1 (phòng khách quét đúng lúc đổi window)
             for (long w : new long[]{window, window - 1, window + 1}) {
                 for (long id = 1; id <= 10_000; id++) {
                     long raw = ((id * 1_000_003L) ^ (w * 998_244_353L)) % MOD;
