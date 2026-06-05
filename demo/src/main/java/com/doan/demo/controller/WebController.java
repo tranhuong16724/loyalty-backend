@@ -234,8 +234,7 @@ public class WebController {
 
         Map<String, Object> res = new LinkedHashMap<>();
         try {
-            // Chuẩn hóa: bỏ khoảng trắng, uppercase
-            // "M 042 250" → "M042250", "m042250" → "M042250"
+
             String normalized = code.trim().toUpperCase().replaceAll("\\s+", "");
 
             if (!normalized.matches("M\\d{6}")) {
@@ -245,14 +244,23 @@ public class WebController {
             }
 
             int  displayCode = Integer.parseInt(normalized.substring(1));
-            long modInv      = modInverse(13337L, 1_000_000L);
-            long customerId  = (displayCode * modInv) % 1_000_000L;
+            long now = System.currentTimeMillis() / (5 * 60 * 1000L);
 
-            return processEarnPoints(customerId, amount, res);
+            for (long w : new long[]{now, now - 1}) {
+                for (long tryId = 1; tryId <= 10000; tryId++) {
+                    long raw = Math.abs(((tryId * 13337L) + w * 999983L) % 1_000_000L);
+                    if (raw == displayCode) {
+                        return processEarnPoints(tryId, amount, res);
+                    }
+                }
+            }
 
+            res.put("success", false);
+            res.put("message", "❌ Mã không hợp lệ hoặc đã hết hạn!");
+            return res;
         } catch (Exception e) {
             res.put("success", false);
-            res.put("message", "❌ Lỗi hệ thống: " + e.getMessage());
+            res.put("message", "❌ Lỗi: " + e.getMessage());
             return res;
         }
     }

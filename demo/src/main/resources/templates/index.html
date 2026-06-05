@@ -854,7 +854,7 @@
             { fps: 10, qrbox: { width: 250, height: 250 } },
             (decodedText) => {
                 stopScanEarn();
-                document.getElementById('earnQrCode').value = decodedText;
+                document.getElementById('earnQrCode').value = decodedText.trim().toUpperCase().replace(/\s+/g, '');
                 showEarnScanResult('📷 Đã quét: ' + decodedText, null);
             },
             () => {}
@@ -868,7 +868,7 @@
     }
 
     function doEarnPoints() {
-        const code   = document.getElementById('earnQrCode').value.trim();
+        const code = document.getElementById('earnQrCode').value.trim().toUpperCase().replace(/\s+/g, '');
         const amount = parseFloat(document.getElementById('earnAmount').value);
         if (!code) { showEarnResult('Vui lòng nhập hoặc quét mã QR của khách hàng!', false); return; }
         if (!amount || amount < 1000) { showEarnResult('Vui lòng nhập số tiền hợp lệ (tối thiểu 1.000đ)!', false); return; }
