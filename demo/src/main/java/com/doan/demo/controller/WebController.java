@@ -225,7 +225,6 @@ public class WebController {
     }
 
     // ── Tích điểm từ QR cá nhân của khách hàng ───────────────────────────────
-
     @PostMapping("/api/scan-qr")
     @ResponseBody
     public Map<String, Object> scanQr(
@@ -234,7 +233,8 @@ public class WebController {
 
         Map<String, Object> res = new LinkedHashMap<>();
         try {
-
+            // Chuẩn hóa: bỏ khoảng trắng, uppercase
+            // "M 042 250" → "M042250"
             String normalized = code.trim().toUpperCase().replaceAll("\\s+", "");
 
             if (!normalized.matches("M\\d{6}")) {
@@ -243,12 +243,17 @@ public class WebController {
                 return res;
             }
 
-            int  displayCode = Integer.parseInt(normalized.substring(1));
-            long now = System.currentTimeMillis() / (5 * 60 * 1000L);
+            long displayCode = Long.parseLong(normalized.substring(1));
+            long now         = System.currentTimeMillis() / (5 * 60 * 1000L);
+            final long MOD   = 1_000_000L;
 
+            // Thử window hiện tại và window trước (phòng mã vừa đổi)
             for (long w : new long[]{now, now - 1}) {
+                long wMod = w % MOD;
                 for (long tryId = 1; tryId <= 10000; tryId++) {
-                    long raw = Math.abs(((tryId * 13337L) + w * 999983L) % 1_000_000L);
+                    long p1  = (tryId * 13337L) % MOD;
+                    long p2  = wMod * (999983L % MOD) % MOD;
+                    long raw = (p1 + p2) % MOD;
                     if (raw == displayCode) {
                         return processEarnPoints(tryId, amount, res);
                     }
@@ -256,11 +261,12 @@ public class WebController {
             }
 
             res.put("success", false);
-            res.put("message", "❌ Mã không hợp lệ hoặc đã hết hạn!");
+            res.put("message", "❌ Mã không hợp lệ hoặc đã hết hạn! Yêu cầu khách mở lại app.");
             return res;
+
         } catch (Exception e) {
             res.put("success", false);
-            res.put("message", "❌ Lỗi: " + e.getMessage());
+            res.put("message", "❌ Lỗi hệ thống: " + e.getMessage());
             return res;
         }
     }
@@ -300,16 +306,6 @@ public class WebController {
         return res;
     }
 
-    // Modular Inverse — Extended Euclidean
-    private long modInverse(long a, long mod) {
-        long[] r = extGcd(a, mod);
-        return (r[1] % mod + mod) % mod;
-    }
-    private long[] extGcd(long a, long b) {
-        if (b == 0) return new long[]{a, 1, 0};
-        long[] r = extGcd(b, a % b);
-        return new long[]{r[0], r[2], r[1] - (a / b) * r[2]};
-    }
     // ── Thêm ưu đãi tuần ─────────────────────────────────────────────────────
     @PostMapping("/add-deal")
     public String addDeal(
