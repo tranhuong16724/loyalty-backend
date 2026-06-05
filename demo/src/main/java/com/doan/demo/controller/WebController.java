@@ -230,40 +230,33 @@ public class WebController {
     public Map<String, Object> scanQr(
             @RequestParam String code,
             @RequestParam double amount) {
-        System.out.println("==========SCAN QR==========");
-        System.out.println("CODE = " + code);
-        System.out.println("AMOUNT = " + amount);
 
         Map<String, Object> res = new LinkedHashMap<>();
         try {
-
             String normalized = code.trim().toUpperCase().replaceAll("\\s+", "");
-
             if (!normalized.matches("M\\d{6}")) {
                 res.put("success", false);
-                res.put("message", "❌ Mã không hợp lệ! Định dạng đúng: M XXXXXX (6 chữ số)");
+                res.put("message", "❌ Mã không hợp lệ!");
                 return res;
             }
 
-            long displayCode = Long.parseLong(normalized.substring(1));
-            long now         = System.currentTimeMillis() / (5 * 60 * 1000L);
-            final long MOD   = 1_000_000L;
+            long target = Long.parseLong(normalized.substring(1));
+            long window = System.currentTimeMillis() / (5 * 60 * 1000L);
+            final long MOD = 1_000_000L;
 
-            // Thử window hiện tại và window trước (phòng mã vừa đổi)
-            for (long w : new long[]{now, now - 1}) {
-                long wMod = w % MOD;
-                for (long tryId = 1; tryId <= 10000; tryId++) {
-                    long p1  = (tryId * 13337L) % MOD;
-                    long p2  = wMod * (999983L % MOD) % MOD;
-                    long raw = (p1 + p2) % MOD;
-                    if (raw == displayCode) {
-                        return processEarnPoints(tryId, amount, res);
+            // Thử window hiện tại và ±1 (phòng khách quét đúng lúc đổi window)
+            for (long w : new long[]{window, window - 1, window + 1}) {
+                for (long id = 1; id <= 10_000; id++) {
+                    long raw = ((id * 1_000_003L) ^ (w * 998_244_353L)) % MOD;
+                    if (raw < 0) raw += MOD;
+                    if (raw == target) {
+                        return processEarnPoints(id, amount, res);
                     }
                 }
             }
 
             res.put("success", false);
-            res.put("message", "❌ Mã không hợp lệ hoặc đã hết hạn! Yêu cầu khách mở lại app.");
+            res.put("message", "❌ Mã không hợp lệ hoặc đã hết hạn!");
             return res;
 
         } catch (Exception e) {
@@ -272,7 +265,6 @@ public class WebController {
             return res;
         }
     }
-
     // Tách logic xử lý điểm — dùng chung cho cả 2 luồng
     private Map<String, Object> processEarnPoints(long customerId,
                                                   double amount,
