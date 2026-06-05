@@ -87,6 +87,8 @@
         @media (max-width: 768px) { .qr-layout { grid-template-columns: 1fr; } }
         #qr-reader { width: 100%; border-radius: 14px; overflow: hidden; border: 2px dashed var(--green2); background: #f8faf8; min-height: 200px; }
         #qr-reader img { display: none !important; }
+        #qr-reader-earn { width: 100%; border-radius: 14px; overflow: hidden; border: 2px dashed var(--green2); background: #f8faf8; min-height: 200px; }
+        #qr-reader-earn img { display: none !important; }
         .qr-result-box { padding: 16px; border-radius: 12px; margin-top: 14px; font-size: 14px; font-weight: 600; display: none; }
         .qr-result-box.success { background: #d1f5e0; color: var(--green); }
         .qr-result-box.error   { background: #fde8ea; color: var(--red); }
@@ -659,34 +661,22 @@
             </button>
         </div>
 
-        <!-- ═══ TAB 1: TÍCH ĐIỂM QR CÁ NHÂN ═══ -->
         <div id="tabEarn">
             <div class="qr-layout">
                 <!-- CỘT TRÁI: Camera -->
-                <div class="manual-panel">
-                    <h6 class="fw-bold mb-2">
-                        📸 Quét QR cá nhân của khách
-                    </h6>
-
+                <div>
+                    <div class="manual-panel">
+                    <h6 class="fw-bold mb-2" style="color:var(--green);">📸 Quét QR cá nhân của khách</h6>
                     <div class="scan-btn-row">
-                        <button class="btn btn-success btn-sm"
-                                onclick="startScanEarn()">
-                            ▶ Bắt đầu quét
-                        </button>
-
-                        <button class="btn btn-secondary btn-sm"
-                                onclick="stopScanEarn()">
-                            ⏹ Dừng
-                        </button>
+                        <button class="btn btn-success btn-sm" onclick="startScanEarn()">▶ Bắt đầu quét</button>
+                        <button class="btn btn-secondary btn-sm" onclick="stopScanEarn()">⏹ Dừng</button>
                     </div>
-
                     <div id="qr-reader-earn"></div>
-
-                    <div id="earnScanResult"
-                         class="qr-result-box"></div>
+                    <div id="earnScanResult" class="qr-result-box"></div>
+                    </div>
                 </div>
 
-                <!-- CỘT PHẢI: Nhập tay + số tiền -->
+                <!-- CỘT PHẢI: Nhập tay -->
                 <div>
                     <div class="manual-panel">
                         <h6 class="fw-bold mb-1">⌨️ Nhập mã hoặc dán mã QR</h6>
@@ -697,7 +687,7 @@
                             <label class="form-label" style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;">Mã QR khách hàng</label>
                             <input type="text" id="earnQrCode" class="form-control"
                                    placeholder="vd: M 042 250 hoặc quét camera"
-                                   style="font-weight:600;font-size:14px; text-transform:uppercase;letter-spacing:2px;"/>
+                                   style="font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:2px;"/>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;">Số tiền giao dịch (VNĐ)</label>
@@ -712,7 +702,9 @@
                             ⭐ Xác nhận tích điểm
                         </button>
                     </div>
+
                     <div id="earnResult" class="qr-result-box"></div>
+
                     <div class="mt-3">
                         <h6 class="fw-bold" style="font-size:13px;color:var(--green);">📋 Tích điểm gần đây</h6>
                         <div id="recentEarn" style="font-size:13px;color:var(--gray);">Chưa có giao dịch nào.</div>
