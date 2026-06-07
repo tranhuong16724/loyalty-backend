@@ -22,15 +22,12 @@ public class AdminDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Không tìm thấy admin: " + username));
 
-        // ── DEBUG: in ra console để kiểm tra hash trong DB ───────────────────
         System.out.println(">>> [DEBUG] Username tìm được: " + admin.getUsername());
         System.out.println(">>> [DEBUG] Hash trong DB: " + admin.getPassword());
 
-        // ── Tự test BCrypt ngay tại đây ──────────────────────────────────────
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         boolean match = encoder.matches("admin123", admin.getPassword());
         System.out.println(">>> [DEBUG] BCrypt.matches('admin123', hash) = " + match);
-        // ─────────────────────────────────────────────────────────────────────
 
         return new User(
                 admin.getUsername(),

@@ -214,9 +214,9 @@ public class WebController {
                 : "redirect:/";
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+
     // XÁC NHẬN MÃ QR / VOUCHER
-    // ─────────────────────────────────────────────────────────────────────────
+
 
     @PostMapping("/verify-voucher")
     public String verifyVoucher(@RequestParam String code, Model model) {
@@ -272,7 +272,6 @@ public class WebController {
             return res;
         }
     }
-    // Tách logic xử lý điểm — dùng chung cho cả 2 luồng
     private Map<String, Object> processEarnPoints(long customerId,
                                                   double amount,
                                                   Map<String, Object> res) {

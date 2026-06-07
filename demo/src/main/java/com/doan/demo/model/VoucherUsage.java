@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Voucher_Usage")   // khớp đúng tên bảng trong DB
+@Table(name = "Voucher_Usage")
 public class VoucherUsage {
 
     @Id
@@ -27,7 +27,6 @@ public class VoucherUsage {
     @Column(name = "used_date")
     private LocalDateTime used_date;
 
-    // ── Getters & Setters ─────────────────────────────────────────────────────
     public Long getId()                         { return id; }
     public void setId(Long id)                  { this.id = id; }
     public Long getCustomerId()                 { return customerId; }

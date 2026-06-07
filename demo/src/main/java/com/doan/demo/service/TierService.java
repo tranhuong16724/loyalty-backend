@@ -30,9 +30,7 @@ public class TierService {
         return fallbackCalcTier(points);
     }
 
-    /**
-     * Bonus điểm khi lên hạng, đọc từ tier_config.bonusPoints.
-     */
+
     public int getTierUpBonus(String newTier) {
         return tierConfigRepository.findByTier(newTier)
                 .map(TierConfig::getBonusPoints)
@@ -48,17 +46,22 @@ public class TierService {
         }
     }
 
-    /**
-     * Kiểm tra tier của customer có đủ điều kiện dùng voucher không.
-     */
+
     public boolean isTierSufficient(String customerTier, String requiredTier) {
-        int customerIdx = TIER_ORDER.indexOf(customerTier);
-        int requiredIdx = TIER_ORDER.indexOf(requiredTier);
-        if (customerIdx < 0 || requiredIdx < 0) return false;
+        if (requiredTier == null || requiredTier.isEmpty()) return true;
+        int customerIdx = TIER_ORDER.indexOf(customerTier != null ? customerTier.toUpperCase() : "BRONZE");
+        int requiredIdx = TIER_ORDER.indexOf(requiredTier.toUpperCase());
+        if (requiredIdx < 0) return true;
+        if (customerIdx < 0) customerIdx = 0;
         return customerIdx >= requiredIdx;
+
+
+//        int customerIdx = TIER_ORDER.indexOf(customerTier);
+//        int requiredIdx = TIER_ORDER.indexOf(requiredTier);
+//        if (customerIdx < 0 || requiredIdx < 0) return false;
+//        return customerIdx >= requiredIdx;
     }
 
-    // ── Fallback khi DB trống ─────────────────────────────────────────────────
     private static String fallbackCalcTier(int points) {
         if (points >= 3000) return "PLATINUM";
         if (points >= 1500) return "GOLD";

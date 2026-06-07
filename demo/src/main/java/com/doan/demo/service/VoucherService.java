@@ -43,7 +43,6 @@ public class VoucherService {
         this.fcmService                 = fcmService;
     }
 
-    // ── Đổi voucher bằng điểm ────────────────────────────────────────────────
 
     @Transactional
     public Map<String, Object> redeemVoucher(Long customerId, Long voucherId) {

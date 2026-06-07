@@ -20,7 +20,6 @@ public class FcmService {
 
     private static final Logger log = LoggerFactory.getLogger(FcmService.class);
 
-    // Đọc từ application.properties: fcm.project-id=xxx
     @org.springframework.beans.factory.annotation.Value("${fcm.project-id}")
     private String projectId;
 

@@ -28,7 +28,6 @@ public class OtpService {
         return otp;
     }
 
-    /** Kiểm tra OTP. Trả true và xóa entry nếu đúng. */
     public boolean verifyAndConsume(String phone, String inputOtp) {
         OtpEntry entry = store.get(phone);
         if (entry == null) return false;
@@ -41,7 +40,6 @@ public class OtpService {
         return true;
     }
 
-    /** Hủy OTP nếu cần (ví dụ: user request lại). */
     public void invalidate(String phone) {
         store.remove(phone);
     }

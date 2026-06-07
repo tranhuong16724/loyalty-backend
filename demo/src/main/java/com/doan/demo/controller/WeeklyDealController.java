@@ -65,7 +65,7 @@ public class WeeklyDealController {
         dc.setCustomerId(customerId);
         dc.setCode(code);
         dc.setUsed(false);
-        dc.setMaxUses(1);       // mặc định 1 lần
+        dc.setMaxUses(1);
         dc.setTimesUsed(0);
         dc.setCreatedAt(LocalDateTime.now());
         dc.setExpiresAt(LocalDateTime.now().plusMinutes(5));
